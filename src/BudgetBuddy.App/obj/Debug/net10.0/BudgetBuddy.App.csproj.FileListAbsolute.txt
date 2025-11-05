@@ -12,3 +12,4 @@ C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\refint\Bu
 C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\BudgetBuddy.App.pdb
 C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\BudgetBuddy.App.genruntimeconfig.cache
 C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\ref\BudgetBuddy.App.dll
+C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\BudgetBuddy.App.sourcelink.json
