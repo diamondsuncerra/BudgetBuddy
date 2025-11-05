@@ -1,0 +1,21 @@
+Id,Timestamp,Payee,Amount,Currency,Category
+1,2025-04-01,Salary,3500,USD,Income
+2,2025-04-02,Starbucks,-7.05,USD,Food
+3,2025-04-03,Kroger,-102.40,USD,Groceries
+4,2025-04-04,Shell Gas,-46.30,USD,Transport
+5,2025-04-05,Amazon,-97.25,USD,Shopping
+6,2025-04-06,Netflix,-15.99,USD,Entertainment
+7,2025-04-07,Electric Co,-68.20,USD,Utilities
+8,2025-04-08,Local Bakery,-10.75,USD,Food
+9,2025-04-09,Uber,-21.60,USD,Transport
+10,2025-04-10,Freelance Payment,510,USD,Income
+11,2025-04-12,Target,-53.40,USD,Groceries
+12,2025-04-14,Spotify,-10.99,USD,Entertainment
+13,2025-04-15,Home Rent,-1200,USD,Housing
+14,2025-04-17,Pharmacy,-30.50,USD,Health
+15,2025-04-18,Subway,-8.90,USD,Food
+16,2025-04-20,Water Utility,-28.75,USD,Utilities
+17,2025-04-22,PayPal Fee,-3.30,USD,Fees
+18,2025-04-23,Gym Membership,-45.00,USD,Fitness
+19,2025-04-26,Apple Store,-134.90,USD,Shopping
+20,2025-04-30,Interest Income,25.10,USD,Income
