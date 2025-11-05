@@ -18,7 +18,7 @@ namespace BudgetBuddy.Domain
             return new Result<T>(true, string.Empty, value);
         }
 
-        public static Result<T> Ok(string error)
+        public static Result<T> Fail(string error)
         {
             return new Result<T>(false, error, default);
         }
