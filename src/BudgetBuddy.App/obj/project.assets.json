@@ -1,11 +1,30 @@
 {
   "version": 3,
   "targets": {
-    "net10.0": {}
+    "net10.0": {
+      "BudgetBuddy.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/BudgetBuddy.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/BudgetBuddy.Domain.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "BudgetBuddy.Domain/1.0.0": {
+      "type": "project",
+      "path": "../BudgetBuddy.Domain/BudgetBuddy.Domain.csproj",
+      "msbuildProject": "../BudgetBuddy.Domain/BudgetBuddy.Domain.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net10.0": []
+    "net10.0": [
+      "BudgetBuddy.Domain >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\csoare\\.nuget\\packages\\": {},
@@ -38,7 +57,11 @@
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Endava\\EndevLocal\\BudgetBuddy\\src\\BudgetBuddy.Domain\\BudgetBuddy.Domain.csproj": {
+              "projectPath": "C:\\Endava\\EndevLocal\\BudgetBuddy\\src\\BudgetBuddy.Domain\\BudgetBuddy.Domain.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

@@ -13,3 +13,7 @@ C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\BudgetBud
 C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\BudgetBuddy.App.genruntimeconfig.cache
 C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\ref\BudgetBuddy.App.dll
 C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\BudgetBuddy.App.sourcelink.json
+C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\bin\Debug\net10.0\BudgetBuddy.Domain.dll
+C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\bin\Debug\net10.0\BudgetBuddy.Domain.pdb
+C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\BudgetBuddy.App.csproj.AssemblyReference.cache
+C:\Endava\EndevLocal\BudgetBuddy\src\BudgetBuddy.App\obj\Debug\net10.0\BudgetBu.564E60B2.Up2Date

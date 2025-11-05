@@ -2,6 +2,7 @@
 
 namespace BudgetBuddy.App;
 
+using BudgetBuddy.Domain;
 public class Program
 {
     public static void Main(string[] args)
@@ -29,6 +30,7 @@ public class Program
 
                 case ConsoleCommands.ListAll:
                     Console.WriteLine("Listing all records...");
+                    Console.WriteLine(10.047m.ToMoney("RON"));
                     break;
 
                 case ConsoleCommands.ListMonth:
