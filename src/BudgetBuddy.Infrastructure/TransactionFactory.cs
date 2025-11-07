@@ -1,12 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.IO.Pipelines;
-using System.Transactions;
-using BudgetBuddy.Domain;
+﻿using BudgetBuddy.Domain;
 namespace BudgetBuddy.Infrastructure;
 
 public class TransactionFactory
 {
-
     public Result<Transaction> TryCreate(string line, string[] headerNames, int lineNumber)
     { // validate and return result either fail or ok
 
@@ -29,13 +25,13 @@ public class TransactionFactory
         if (string.IsNullOrWhiteSpace(currency)) return Result<Transaction>.Fail("Fail");
 
         var dateResult = timestamp.TryDate();
-        if(!dateResult.isSuccess) return Result<Transaction>.Fail("Fail");
+        if(!dateResult.IsSuccess) return Result<Transaction>.Fail("Fail");
 
         var amountResult = amtText.TryDec();
-        if (!amountResult.isSuccess) return Result<Transaction>.Fail("Fail");
+        if (!amountResult.IsSuccess) return Result<Transaction>.Fail("Fail");
 
 
-        var amount = amountResult.Value!.Value;
+        var amount = amountResult.Value!;
         if (amount < -1_000_000m || amount > 1_000_000m)
             return Result<Transaction>.Fail("Fail");
 
@@ -45,7 +41,7 @@ public class TransactionFactory
         var tx = new Transaction
         {
             Id = id,
-            Timestamp = dateResult.Value!.Value,
+            Timestamp = dateResult.Value!,
             Payee = payee,
             Amount = amount,
             Currency = currency,

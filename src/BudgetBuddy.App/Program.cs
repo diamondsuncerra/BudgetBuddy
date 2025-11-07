@@ -1,14 +1,14 @@
-﻿using System.Data;
-
-namespace BudgetBuddy.App;
+﻿namespace BudgetBuddy.App;
 
 using BudgetBuddy.Domain;
+using BudgetBuddy.Infrastructure;
 public class Program
 {
     public static void Main(string[] args)
     {
         Console.WriteLine("Welcome to Budget Buddy!\nPlease choose one of the following:");
         ConsoleHelper.PrintAllOptions();
+        IRepository<Transaction, string> repo = new TransactionsRepository();
 
         bool looping = true;
         while (looping)

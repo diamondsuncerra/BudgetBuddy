@@ -7,11 +7,12 @@ namespace BudgetBuddy.Domain
 {
     public class Transaction
     {
-        string Id { get; set; }
-        DateTime Timestamp { get; set; }
-        string Payee { get; set; }
-        decimal Amount { get; set; } // |±1,000,000|.
-        string Currency { get; set; }
-        string Category { get; set; }
+        public required string Id { get; init; }
+        public required DateTime Timestamp { get; init; }
+        public required string Payee { get; init; }
+        public required decimal Amount { get; init; } // |±1,000,000|.
+        public required string Currency { get; init; }
+        public required string Category { get; set; } 
+        // NOTE: diff between init and set, init -> allows assignment only during obj creation
     }
 }
