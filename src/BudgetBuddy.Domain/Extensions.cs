@@ -1,6 +1,4 @@
 ﻿using System.Globalization;
-using System.IO.Pipelines;
-
 namespace BudgetBuddy.Domain;
 
 public static class Extensions
@@ -49,7 +47,7 @@ public static class Extensions
     {
         if(DateTime.TryParseExact(text,"yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
-            return Result<DateTime>.Ok(value);
+            return Result<DateTime>.Ok(date);
         } else
         {
             return Result<DateTime>.Fail($"Invalid date: '{text}'");
