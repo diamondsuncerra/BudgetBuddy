@@ -3,8 +3,7 @@ namespace BudgetBuddy.App
     public enum ConsoleCommands
     {
         Import,
-        ListAll,
-        ListMonth,
+        List,
         ByCategory,
         Over,
         Search,
@@ -16,6 +15,11 @@ namespace BudgetBuddy.App
         Help,
         Exit
     }
-    public enum StastsScope { Month, Year } 
-    public enum ExportFormat {Json, Csv}
+    public enum ListScope { All, Month }
+    public enum StastsScope { Month, Year }
+    public enum ExportFormat { Json, Csv }
+    public class Warnings
+    {
+        public static string INVALID_COMMAND = "Invalid command.";
+    }
 }

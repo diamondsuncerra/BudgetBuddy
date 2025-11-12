@@ -1,5 +1,6 @@
 ﻿namespace BudgetBuddy.App;
 
+using System.Data;
 using System.Threading.Tasks;
 using BudgetBuddy.Domain;
 using BudgetBuddy.Infrastructure;
@@ -18,7 +19,7 @@ public class Program
         using var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (s, e) =>
         {
-            e.Cancel = true;          // don’t kill the process immediately
+            e.Cancel = true; 
             cts.Cancel();
             Console.WriteLine("Cancelling... please wait.");
         };
@@ -27,45 +28,16 @@ public class Program
         while (looping)
         {
 
-            string? input = Console.ReadLine();
-
-            var parts = input?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-            var cmdText = parts?[0];
-            var argText = parts?.Skip(1).ToArray();
-
-            if (!Enum.TryParse(cmdText, true, out ConsoleCommands command))
+            if(!ConsoleHelper.GetCommand(out ConsoleCommands command, out string [] argText))
             {
-                Console.WriteLine("Unknown command.");
-                continue;
+                Logger.Warn(Warnings.INVALID_COMMAND);
             }
 
             switch (command)
             {
-                case ConsoleCommands.Import:
-                    if (argText?.Length < 1)
-                    {
-                        Logger.Warn("Improper usage of import.");
-                        break;
-                    }
-                    
-                    try
-                    {
-                        await importer.ReadAllFilesAsync(argText!, cts.Token);
-                    } catch(OperationCanceledException)
-                    {
-                        Logger.Info("Operation Canceled.");
-                    }
-                    break;
+                case ConsoleCommands.Import: await ConsoleHelper.Import(argText, repo, cts.Token);  break;
 
-                case ConsoleCommands.ListAll:
-                    Console.WriteLine("Listing all records...");
-                    Console.WriteLine(10.047m.ToMoney("RON"));
-                    break;
-
-                case ConsoleCommands.ListMonth:
-                    Console.WriteLine("Listing records for a specific month...");
-                    break;
+                case ConsoleCommands.List: ConsoleHelper.List(argText, repo); break;
 
                 case ConsoleCommands.ByCategory:
                     Console.WriteLine("Listing by category...");

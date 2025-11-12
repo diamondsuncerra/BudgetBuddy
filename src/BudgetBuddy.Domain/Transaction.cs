@@ -14,5 +14,10 @@ namespace BudgetBuddy.Domain
         public required string Currency { get; init; }
         public required string Category { get; set; } 
         // NOTE: diff between init and set, init -> allows assignment only during obj creation
+
+        public override string ToString()
+        {
+            return $"{Id}, {Timestamp}, {Payee}, {Amount}, {Currency}, {Category}";
+        }
     }
 }
