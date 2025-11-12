@@ -22,4 +22,8 @@ namespace BudgetBuddy.App
     {
         public static string INVALID_COMMAND = "Invalid command.";
     }
+    public class Info
+    {
+        public static string NO_TRANSACTIONS_FOUND = "No transactions were found";
+    }
 }

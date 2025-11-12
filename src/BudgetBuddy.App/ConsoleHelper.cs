@@ -37,9 +37,9 @@ namespace BudgetBuddy.App
                 args = Array.Empty<string>();
                 return false;
             }
-            
+
             var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if(parts.Length == 0)
+            if (parts.Length == 0)
             {
                 command = default;
                 args = Array.Empty<string>();
@@ -77,11 +77,13 @@ namespace BudgetBuddy.App
             if (argText?.Length < 1)
             {
                 Logger.Warn("Improper usage of list.");
+                return;
             }
 
             if (!Enum.TryParse<ListScope>(argText![0], ignoreCase: true, out var scope))
             {
                 Logger.Warn("Improper usage of list.");
+                return;
             }
 
             switch (scope)
@@ -92,7 +94,22 @@ namespace BudgetBuddy.App
                         var all = repo.GetAll();
                         foreach (var t in all)
                         {
-                            Console.WriteLine(t.ToString());
+                            Console.WriteLine(t);
+                        }
+                        break;
+                    }
+                case ListScope.Month:
+                    {
+                        var all = repo.GetAll();
+                        var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(argText[1]));
+
+                        if (!monthlyTransactions.Any())
+                        {
+                            Logger.Info(Info.NO_TRANSACTIONS_FOUND);
+                        }
+                        foreach (var t in monthlyTransactions)
+                        {
+                            Console.WriteLine(t);
                         }
                         break;
                     }
