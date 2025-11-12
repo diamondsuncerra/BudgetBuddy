@@ -1,22 +1,40 @@
 ﻿namespace BudgetBuddy.App;
 
+using System.Threading.Tasks;
 using BudgetBuddy.Domain;
 using BudgetBuddy.Infrastructure;
+using BudgetBuddy.Infrastructure.Import;
+
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Console.WriteLine("Welcome to Budget Buddy!\nPlease choose one of the following:");
         ConsoleHelper.PrintAllOptions();
         IRepository<Transaction, string> repo = new TransactionsRepository();
+        CSVImporter importer = new(repo);
+
+
+        using var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (s, e) =>
+        {
+            e.Cancel = true;          // don’t kill the process immediately
+            cts.Cancel();
+            Console.WriteLine("Cancelling... please wait.");
+        };
 
         bool looping = true;
         while (looping)
         {
 
-            string? input = Console.ReadLine()?.Replace(" ", "", StringComparison.OrdinalIgnoreCase);
+            string? input = Console.ReadLine();
 
-            if (!Enum.TryParse(input, true, out ConsoleCommands command))
+            var parts = input?.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            var cmdText = parts?[0];
+            var argText = parts?.Skip(1).ToArray();
+
+            if (!Enum.TryParse(cmdText, true, out ConsoleCommands command))
             {
                 Console.WriteLine("Unknown command.");
                 continue;
@@ -25,7 +43,19 @@ public class Program
             switch (command)
             {
                 case ConsoleCommands.Import:
-                    Console.WriteLine("Import command selected.");
+                    if (argText?.Length < 1)
+                    {
+                        Logger.Warn("Improper usage of import.");
+                        break;
+                    }
+                    
+                    try
+                    {
+                        await importer.ReadAllFilesAsync(argText!, cts.Token);
+                    } catch(OperationCanceledException)
+                    {
+                        Logger.Info("Operation Canceled.");
+                    }
                     break;
 
                 case ConsoleCommands.ListAll:

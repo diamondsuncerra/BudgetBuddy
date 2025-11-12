@@ -45,7 +45,7 @@ public static class Extensions
     
         public static Result<DateTime> TryDate(this string text)
     {
-        if(DateTime.TryParseExact(text,"yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        if(DateTime.TryParseExact(text,"yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
             return Result<DateTime>.Ok(date);
         } else

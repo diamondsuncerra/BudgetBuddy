@@ -1,54 +1,74 @@
 ﻿using BudgetBuddy.Domain;
-namespace BudgetBuddy.Infrastructure;
 
-public class TransactionFactory
+namespace BudgetBuddy.Infrastructure
 {
-    public static Result<Transaction> TryCreate(string line)
-    { // validate and return result either fail or ok
+    public class TransactionFactory
+    {
+        private const decimal MinAmount = -1_000_000m;
+        private const decimal MaxAmount =  1_000_000m;
 
-        if (string.IsNullOrWhiteSpace(line))
-            return Result<Transaction>.Fail("Fail");
-
-        string[] values = line.Split(','); // if fields contain commas there will be problems
-        if (values.Length < 5)
-            return Result<Transaction>.Fail("Fail");
-
-        string id       = values[0].Trim();
-        string timestamp   = values[1].Trim();
-        string payee    = values[2].Trim();
-        string amtText  = values[3].Trim();
-        string currency = values[4].Trim();
-        string category = values.Length >= 6 ? values[5].Trim() : string.Empty;
-
-        if (string.IsNullOrWhiteSpace(id)) return Result<Transaction>.Fail("Fail");
-        if (string.IsNullOrWhiteSpace(payee)) return Result<Transaction>.Fail("Fail");
-        if (string.IsNullOrWhiteSpace(currency)) return Result<Transaction>.Fail("Fail");
-
-        var dateResult = timestamp.TryDate();
-        if(!dateResult.IsSuccess) return Result<Transaction>.Fail("Fail");
-
-        var amountResult = amtText.TryDec();
-        if (!amountResult.IsSuccess) return Result<Transaction>.Fail("Fail");
-
-
-        var amount = amountResult.Value!;
-        if (amount < -1_000_000m || amount > 1_000_000m)
-            return Result<Transaction>.Fail("Fail");
-
-        if (string.IsNullOrWhiteSpace(category))
-            category = "Uncategorized";
-
-        var tx = new Transaction
+        public static Result<Transaction> TryCreate(string line)
         {
-            Id = id,
-            Timestamp = dateResult.Value!,
-            Payee = payee,
-            Amount = amount,
-            Currency = currency,
-            Category = category
-        };
+         
+            if (string.IsNullOrWhiteSpace(line))
+                return Result<Transaction>.Fail("Empty line.");
 
-        return Result<Transaction>.Ok(tx);
+            char delimiter = (line.Contains(';') && !line.Contains(',')) ? ';' : ',';
+
+            string[] values = line.Split(delimiter);
+            if (values.Length < 5)
+                return Result<Transaction>.Fail(
+                    $"Wrong column count: got {values.Length}, expected at least 5 (Id,Timestamp,Payee,Amount,Currency[,Category]). " +
+                    $"Detected delimiter '{delimiter}'. Raw: {line}");
+
+            string id        = values[0].Trim();
+            string tsText    = values[1].Trim();
+            string payee     = values[2].Trim();
+            string amtText   = values[3].Trim();
+            string currency  = values[4].Trim();
+            string category  = values.Length >= 6 ? values[5].Trim() : string.Empty;
+
+            if (string.IsNullOrWhiteSpace(id))       return Result<Transaction>.Fail("Missing Id.");
+            if (string.IsNullOrWhiteSpace(payee))    return Result<Transaction>.Fail("Missing Payee.");
+            if (string.IsNullOrWhiteSpace(currency)) return Result<Transaction>.Fail("Missing Currency.");
+
+            var dateResult = tsText.TryDate();
+            if (!dateResult.IsSuccess)
+                return Result<Transaction>.Fail(
+                    $"Invalid Timestamp '{tsText}'. Expected format yyyy-MM-dd.");
+
+            if (amtText.Contains(',') && !amtText.Contains('.'))
+            {
+                // Keep strict per spec; guide the user:
+                return Result<Transaction>.Fail(
+                    $"Invalid Amount '{amtText}'. Use dot as decimal separator (InvariantCulture), e.g., 1234.56");
+            }
+
+            var amountResult = amtText.TryDec();
+            if (!amountResult.IsSuccess)
+                return Result<Transaction>.Fail(
+                    $"Invalid Amount '{amtText}'. Expected a number like 1234.56 (InvariantCulture).");
+
+            var amount = amountResult.Value!;
+            if (amount < MinAmount || amount > MaxAmount)
+                return Result<Transaction>.Fail(
+                    $"Amount out of range: {amount}. Allowed range is [{MinAmount}, {MaxAmount}].");
+
+            if (string.IsNullOrWhiteSpace(category))
+                category = "Uncategorized";
+
+    
+            var tx = new Transaction
+            {
+                Id        = id,
+                Timestamp = dateResult.Value!,
+                Payee     = payee,
+                Amount    = amount,
+                Currency  = currency,
+                Category  = category
+            };
+
+            return Result<Transaction>.Ok(tx);
+        }
     }
-
 }
