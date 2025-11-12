@@ -3,7 +3,7 @@ namespace BudgetBuddy.Infrastructure;
 
 public class TransactionFactory
 {
-    public Result<Transaction> TryCreate(string line, string[] headerNames, int lineNumber)
+    public static Result<Transaction> TryCreate(string line)
     { // validate and return result either fail or ok
 
         if (string.IsNullOrWhiteSpace(line))
