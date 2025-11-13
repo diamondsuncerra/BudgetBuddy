@@ -26,8 +26,7 @@ namespace BudgetBuddy.Infrastructure
         }
         public IEnumerable<Transaction> GetAll()
         {
-            return _data.Values;
+            return _data.Values.OrderBy(t => int.Parse(t.Id));
         }
-
     }
 }

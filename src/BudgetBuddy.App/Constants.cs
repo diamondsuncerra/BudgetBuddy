@@ -26,4 +26,8 @@ namespace BudgetBuddy.App
     {
         public static string NO_TRANSACTIONS_FOUND = "No transactions were found";
     }
+    public enum HeaderFormat
+    {
+        Id, Timestamp, Payee, Amount, Currency, Category
+    }
 }
