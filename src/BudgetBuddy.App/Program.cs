@@ -19,7 +19,7 @@ public class Program
         using var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (s, e) =>
         {
-            e.Cancel = true; 
+            e.Cancel = true;
             cts.Cancel();
             Console.WriteLine("Cancelling... please wait.");
         };
@@ -28,40 +28,29 @@ public class Program
         while (looping)
         {
 
-            if(!ConsoleHelper.GetCommand(out ConsoleCommands command, out string [] argText))
+            if (!ConsoleHelper.GetCommand(out ConsoleCommands command, out string[] argText))
             {
                 Logger.Warn(Warnings.INVALID_COMMAND);
+                continue;
             }
 
             switch (command)
             {
-                case ConsoleCommands.Import: await ConsoleHelper.Import(argText, repo, cts.Token);  break;
+                case ConsoleCommands.Import: await ConsoleHelper.Import(argText, repo, cts.Token); break;
 
                 case ConsoleCommands.List: ConsoleHelper.List(argText, repo); break;
 
-                case ConsoleCommands.ByCategory:
-                    Console.WriteLine("Listing by category...");
-                    break;
+                case ConsoleCommands.ByCategory: ConsoleHelper.ByCategory(argText, repo);  break;
 
-                case ConsoleCommands.Over:
-                    Console.WriteLine("Showing transactions over a specific amount...");
-                    break;
+                case ConsoleCommands.Over: ConsoleHelper.Over(argText, repo); break;
 
-                case ConsoleCommands.Search:
-                    Console.WriteLine("Searching transactions...");
-                    break;
+                case ConsoleCommands.Search: ConsoleHelper.Search(argText, repo); break;
 
-                case ConsoleCommands.SetCategory:
-                    Console.WriteLine("Setting category for a transaction...");
-                    break;
+                case ConsoleCommands.SetCategory: ConsoleHelper.SetCategory(argText, repo);  break;
 
-                case ConsoleCommands.RenameCategory:
-                    Console.WriteLine("Renaming a category...");
-                    break;
+                case ConsoleCommands.RenameCategory: ConsoleHelper.RenameCategory(argText, repo);  break;
 
-                case ConsoleCommands.Remove:
-                    Console.WriteLine("Removing a transaction...");
-                    break;
+                case ConsoleCommands.Remove: ConsoleHelper.Remove(argText, repo);  break;
 
                 case ConsoleCommands.Stats:
                     Console.WriteLine("Showing statistics...");
