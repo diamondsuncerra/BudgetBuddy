@@ -8,6 +8,6 @@ namespace BudgetBuddy.Domain
 {
     public interface IExportStrategy
     {
-        public static abstract Task Export(string fileName, IDictionary<string, Transaction> data, CancellationToken token);
+        public  abstract Task<bool> Export(string fileName, IEnumerable<Transaction> data, CancellationToken token, bool overwrite);
     }
 }

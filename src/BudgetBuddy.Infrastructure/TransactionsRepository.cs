@@ -6,6 +6,7 @@ namespace BudgetBuddy.Infrastructure
     public class TransactionsRepository : IRepository<Transaction, string>
     {
         private readonly ConcurrentDictionary<string, Transaction> _data = new();
+        public int Count() => _data.Count;
         public bool TryAdd(Transaction entity)
         {
             return _data.TryAdd(entity.Id, entity);   

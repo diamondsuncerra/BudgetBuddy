@@ -1,0 +1,210 @@
+[
+  {
+    "id": "1",
+    "timestamp": "2025-01-02T00:00:00",
+    "payee": "Salary",
+    "amount": 3500,
+    "currency": "USD",
+    "category": "Income"
+  },
+  {
+    "id": "2",
+    "timestamp": "2025-01-03T00:00:00",
+    "payee": "Starbucks",
+    "amount": -6.75,
+    "currency": "USD",
+    "category": "Food"
+  },
+  {
+    "id": "3",
+    "timestamp": "2025-01-04T00:00:00",
+    "payee": "Walmart",
+    "amount": -124.60,
+    "currency": "USD",
+    "category": "Groceries"
+  },
+  {
+    "id": "4",
+    "timestamp": "2025-01-05T00:00:00",
+    "payee": "Shell Gas",
+    "amount": -42.15,
+    "currency": "USD",
+    "category": "Transport"
+  },
+  {
+    "id": "5",
+    "timestamp": "2025-01-06T00:00:00",
+    "payee": "Netflix",
+    "amount": -15.99,
+    "currency": "USD",
+    "category": "Entertainment"
+  },
+  {
+    "id": "6",
+    "timestamp": "2025-01-07T00:00:00",
+    "payee": "Amazon",
+    "amount": -89.40,
+    "currency": "USD",
+    "category": "Shopping"
+  },
+  {
+    "id": "7",
+    "timestamp": "2025-03-07T00:00:00",
+    "payee": "Electric Co",
+    "amount": -65.30,
+    "currency": "USD",
+    "category": "Utilities"
+  },
+  {
+    "id": "8",
+    "timestamp": "2025-03-08T00:00:00",
+    "payee": "Local Diner",
+    "amount": -19.60,
+    "currency": "USD",
+    "category": "Food"
+  },
+  {
+    "id": "9",
+    "timestamp": "2025-03-09T00:00:00",
+    "payee": "Uber",
+    "amount": -22.15,
+    "currency": "USD",
+    "category": "Transport"
+  },
+  {
+    "id": "10",
+    "timestamp": "2025-03-10T00:00:00",
+    "payee": "Freelance Payment",
+    "amount": 480,
+    "currency": "USD",
+    "category": "Income"
+  },
+  {
+    "id": "11",
+    "timestamp": "2025-03-12T00:00:00",
+    "payee": "Target",
+    "amount": -59.90,
+    "currency": "USD",
+    "category": "Groceries"
+  },
+  {
+    "id": "12",
+    "timestamp": "2025-03-14T00:00:00",
+    "payee": "Spotify",
+    "amount": -10.99,
+    "currency": "USD",
+    "category": "Entertainment"
+  },
+  {
+    "id": "13",
+    "timestamp": "2025-03-15T00:00:00",
+    "payee": "Home Rent",
+    "amount": -1200,
+    "currency": "USD",
+    "category": "Housing"
+  },
+  {
+    "id": "14",
+    "timestamp": "2025-03-17T00:00:00",
+    "payee": "Pharmacy",
+    "amount": -28.75,
+    "currency": "USD",
+    "category": "Health"
+  },
+  {
+    "id": "15",
+    "timestamp": "2025-03-19T00:00:00",
+    "payee": "Burger King",
+    "amount": -9.50,
+    "currency": "USD",
+    "category": "Food"
+  },
+  {
+    "id": "16",
+    "timestamp": "2025-03-21T00:00:00",
+    "payee": "Water Utility",
+    "amount": -29.10,
+    "currency": "USD",
+    "category": "Utilities"
+  },
+  {
+    "id": "17",
+    "timestamp": "2025-03-23T00:00:00",
+    "payee": "PayPal Fee",
+    "amount": -3.40,
+    "currency": "USD",
+    "category": "Fees"
+  },
+  {
+    "id": "18",
+    "timestamp": "2025-03-25T00:00:00",
+    "payee": "Gym Membership",
+    "amount": -45.00,
+    "currency": "USD",
+    "category": "Fitness"
+  },
+  {
+    "id": "19",
+    "timestamp": "2025-03-27T00:00:00",
+    "payee": "Apple Store",
+    "amount": -118.60,
+    "currency": "USD",
+    "category": "Shopping"
+  },
+  {
+    "id": "20",
+    "timestamp": "2025-03-31T00:00:00",
+    "payee": "Interest Income",
+    "amount": 26.20,
+    "currency": "USD",
+    "category": "Income"
+  },
+  {
+    "id": "43",
+    "timestamp": "2025-03-01T00:00:00",
+    "payee": "Salary",
+    "amount": 3500,
+    "currency": "USD",
+    "category": "Income"
+  },
+  {
+    "id": "44",
+    "timestamp": "2025-03-02T00:00:00",
+    "payee": "Starbucks",
+    "amount": -6.95,
+    "currency": "USD",
+    "category": "Food"
+  },
+  {
+    "id": "45",
+    "timestamp": "2025-03-03T00:00:00",
+    "payee": "Walmart",
+    "amount": -132.80,
+    "currency": "USD",
+    "category": "Groceries"
+  },
+  {
+    "id": "46",
+    "timestamp": "2025-03-04T00:00:00",
+    "payee": "Shell Gas",
+    "amount": -48.20,
+    "currency": "USD",
+    "category": "Transport"
+  },
+  {
+    "id": "47",
+    "timestamp": "2025-03-05T00:00:00",
+    "payee": "Amazon",
+    "amount": -76.45,
+    "currency": "USD",
+    "category": "Shopping"
+  },
+  {
+    "id": "648",
+    "timestamp": "2025-03-06T00:00:00",
+    "payee": "Netflix",
+    "amount": -15.99,
+    "currency": "USD",
+    "category": "Entertainment"
+  }
+]

@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using BudgetBuddy.Domain;
+using BudgetBuddy.Infrastructure.Export;
 using BudgetBuddy.Infrastructure.Import;
 using Microsoft.VisualBasic;
 
@@ -298,6 +300,73 @@ namespace BudgetBuddy.App
         {
 
         }
+
+        public static async Task Export(string[]? argText, IRepository<Transaction, string> repo, CancellationToken token)
+        {
+
+            if (argText == null)
+            {
+                Logger.Warn("Improper usage of export.");
+                return;
+            }
+
+            if (argText.Length < 2)
+            {
+                Logger.Warn("Improper usage of export.");
+                return;
+
+            }
+
+            if (string.IsNullOrWhiteSpace(argText[0]))
+            {
+                Logger.Warn("Improper usage of export.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(argText[1]))
+            {
+                Logger.Warn("Improper usage of export.");
+                return;
+            }
+
+            if (repo.Count() == 0)
+            {
+                Logger.Info("No data found to export.");
+                return;
+            }
+
+            IExportStrategy strategy;
+            string fileName = argText[1];
+
+            if (argText[0].Equals("json", StringComparison.OrdinalIgnoreCase))
+            {
+                strategy = new JsonExportStrategy();
+            }
+            else
+            if (argText[0].Equals("json", StringComparison.OrdinalIgnoreCase))
+            {
+                strategy = new CvsExportStrategy();
+            }
+            else
+            {
+                Logger.Warn("The strategy is not implemented yet. Choose between json or csv.");
+                return;
+            }
+
+            Exporter exporter = new Exporter(strategy);
+            bool overwrite = ConfirmOverwrite(fileName);
+            bool result = await exporter.Run(fileName, repo.GetAll(), token, overwrite);
+
+            if (result)
+            {
+                Logger.Info($"Succesfully exported data to file {fileName}, in format {argText[0]}.");
+                // overwrite???
+            }
+            else
+            {
+                Logger.Warn("Export failed.");
+            }
+        }
         public static void PrintTransactions(IEnumerable<Transaction> transactions)
         {
             if (!transactions.Any())
@@ -319,6 +388,22 @@ namespace BudgetBuddy.App
 
             Console.WriteLine(transaction);
 
+        }
+
+        public static bool ConfirmOverwrite(string fileName)
+        {
+            if (!File.Exists(fileName))
+                return true;
+
+            Console.WriteLine($"File {fileName} already exists.");
+            Console.Write("Do you want to overwrite it? [y/N]: ");
+            var response = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(response))
+                return false;
+
+            response = response.Trim().ToLowerInvariant();
+            return response == "y" || response == "yes";
         }
     }
 }

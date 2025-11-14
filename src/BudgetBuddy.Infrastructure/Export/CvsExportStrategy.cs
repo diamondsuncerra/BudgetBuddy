@@ -6,10 +6,10 @@ using BudgetBuddy.Domain;
 
 namespace BudgetBuddy.Infrastructure.Export
 {
-    public class CvsExport : IExportStrategy
+    public class CvsExportStrategy : IExportStrategy
     {
 
-        public static Task Export(string fileName, IDictionary<string, Transaction> data, CancellationToken token)
+        public  Task<bool> Export(string fileName, IEnumerable<Transaction> data, CancellationToken token, bool overwrite)
         {
             throw new NotImplementedException();
         }

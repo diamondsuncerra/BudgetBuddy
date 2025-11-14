@@ -25,6 +25,7 @@ namespace BudgetBuddy.App
     public class Info
     {
         public static string NO_TRANSACTIONS_FOUND = "No transactions were found";
+        public static string OVERWRITING_PROMPT = "This file already exists. Do you want to overwrite it? (y/n): ";
     }
     public enum HeaderFormat
     {

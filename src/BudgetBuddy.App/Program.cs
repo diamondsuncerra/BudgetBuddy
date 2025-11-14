@@ -56,9 +56,7 @@ public class Program
                     Console.WriteLine("Showing statistics...");
                     break;
 
-                case ConsoleCommands.Export:
-                    Console.WriteLine("Exporting data...");
-                    break;
+                case ConsoleCommands.Export: await ConsoleHelper.Export(argText, repo, cts.Token); break;
 
                 case ConsoleCommands.Help:
                     ConsoleHelper.PrintAllOptions();

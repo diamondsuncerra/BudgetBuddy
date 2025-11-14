@@ -7,6 +7,7 @@ namespace BudgetBuddy.Domain
 {
     public interface IRepository<T, TKey>
     {
+        int Count();
         bool TryAdd(T entity);
         bool Contains(TKey id);
         bool Remove(TKey id);
