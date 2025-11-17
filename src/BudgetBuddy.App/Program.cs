@@ -52,9 +52,7 @@ public class Program
 
                 case ConsoleCommands.Remove: ConsoleHelper.Remove(argText, repo);  break;
 
-                case ConsoleCommands.Stats:
-                    Console.WriteLine("Showing statistics...");
-                    break;
+                case ConsoleCommands.Stats: ConsoleHelper.Stats(argText, repo); break;
 
                 case ConsoleCommands.Export: await ConsoleHelper.Export(argText, repo, cts.Token); break;
 

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using BudgetBuddy.Domain;
@@ -133,6 +135,11 @@ namespace BudgetBuddy.App
                     }
                 case ListScope.Month:
                     {
+                        if (!argText[1].TryMonth().IsSuccess)
+                        {
+                            Logger.Warn("Invalid Month");
+                            return;
+                        }
                         var all = repo.GetAll();
                         var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(argText[1]));
                         PrintTransactions(monthlyTransactions);
@@ -298,7 +305,58 @@ namespace BudgetBuddy.App
 
         public static void Stats(string?[] argText, IRepository<Transaction, string> repo)
         {
+            if (argText == null)
+            {
+                Logger.Warn("Improper usage of stats.");
+                return;
+            }
+            if (argText.Length < 2)
+            {
+                Logger.Warn("Improper usage of stats.");
+                return;
+            }
 
+            if (!Enum.TryParse<StastsScope>(argText[0], ignoreCase: true, out var scope))
+            {
+                Logger.Warn("Improper usage of stats.");
+                return;
+            }
+
+            switch (scope)
+            {
+                case StastsScope.Month:
+                    {
+                        var month = argText[1];
+                        if (string.IsNullOrWhiteSpace(month))
+                        {
+                            Logger.Warn("No month given.");
+                            return;
+                        }
+
+                        if (!month.TryMonth().IsSuccess)
+                        {
+                            Logger.Warn("Not a valid date.");
+                            return;
+                        }
+                        (decimal income, decimal expense, decimal net) = GetIncomeExpenseNetForMonth(month, repo);
+                        decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month, repo);
+                        IEnumerable<(string, decimal)> topCategories = GetTopExpenseCategoriesForMonth(month, repo, 3);
+                        
+                        Logger.Info($"For the month {month}");
+                        Logger.Info($"Income: {income}, Expense: {expense}, Net: {net}");
+                        Logger.Info($"Average size of a transaction was: {averageTransactionSize}");
+                        Logger.Info(topCategories.ToPrettyTable("USD"));
+
+                        break;
+                    }
+                case StastsScope.Yearly:
+                    {
+                        var all = repo.GetAll();
+                        var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(argText[1]));
+                        PrintTransactions(monthlyTransactions);
+                        break;
+                    }
+            }
         }
 
         public static async Task Export(string[]? argText, IRepository<Transaction, string> repo, CancellationToken token)
@@ -404,6 +462,42 @@ namespace BudgetBuddy.App
 
             response = response.Trim().ToLowerInvariant();
             return response == "y" || response == "yes";
+        }
+
+
+        public static (decimal, decimal, decimal) GetIncomeExpenseNetForMonth(string month, IRepository<Transaction, string> repo)
+        {
+            decimal income = 0m, expense = 0m;
+            var all = repo.GetAll();
+            var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
+
+            var incomeTransactions = monthlyTransactions.Where(t => t.Amount > 0m).Select(t => t.Amount);
+            var expenseTransactions = monthlyTransactions.Where(t => t.Amount <= 0m).Select(t => t.Amount);
+
+            income = incomeTransactions.Sum();
+            expense = expenseTransactions.SumAbs();
+
+            decimal net = income - expense;
+            return (income, expense, net);
+        }
+
+        public static decimal GetAverageTransactionSizeForMonth(string month, IRepository<Transaction, string> repo)
+        {
+            var all = repo.GetAll();
+            var monthly = all.Where(t => t.Timestamp.MonthKey().Equals(month)).Select(t=>t.Amount);
+            return monthly.Any() ? monthly.AverageAbs() : 0m;
+        }
+
+        public static IEnumerable<(string Category, decimal Total)> GetTopExpenseCategoriesForMonth(string month, IRepository<Transaction, string> repo, int top)
+        {
+            var all = repo.GetAll();
+            var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
+            return monthlyTransactions.Where(t => t.Amount < 0m)
+            .GroupBy(t => t.Category)
+            .Select(g => (Category: g.Key, Total: g.Select(t => t.Amount).Sum()))
+            .OrderByDescending(x => -x.Total)
+            .Take(top);
+
         }
     }
 }

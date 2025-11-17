@@ -1,8 +1,30 @@
 ﻿using System.Globalization;
+using System.Text;
 namespace BudgetBuddy.Domain;
 
 public static class Extensions
 {
+    public static string ToPrettyTable(this IEnumerable<(string Category, decimal Value)> categories, string currency)
+    {
+        if (categories == null || !categories.Any())
+            return "No categories found.";
+
+        var sb = new StringBuilder();
+        sb.AppendLine("Top Expense Categories:");
+        sb.AppendLine(new string('-', 33));
+
+        // find the longest category for column alignment
+        int maxCatLength = categories.Max(x => x.Category.Length);
+        string format = "{0,-" + (maxCatLength + 2) + "}{1,10} {2}";
+
+        foreach (var (category, value) in categories)
+        {
+            sb.AppendLine(string.Format(format, category, value.ToMoney(currency), ""));
+        }
+
+        sb.AppendLine(new string('-', 33));
+        return sb.ToString();
+    }
     public static string ToMoney(this decimal value, string currency)
     {
         return string.Format(CultureInfo.InvariantCulture, "{0:N2} {1}", value, currency);
@@ -41,16 +63,30 @@ public static class Extensions
         {
             return Result<decimal>.Fail($"Invalid decimal: '{text}'");
         }
-    } 
-    
-        public static Result<DateTime> TryDate(this string text)
+    }
+
+    public static Result<DateTime> TryDate(this string text)
     {
-        if(DateTime.TryParseExact(text,"yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        if (DateTime.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
             return Result<DateTime>.Ok(date);
-        } else
+        }
+        else
         {
             return Result<DateTime>.Fail($"Invalid date: '{text}'");
         }
-    } 
+    }
+
+    public static Result<DateTime> TryMonth(this string text)
+    {
+        if (DateTime.TryParseExact(text, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            return Result<DateTime>.Ok(date);
+        }
+        else
+        {
+            return Result<DateTime>.Fail($"Invalid date: '{text}'");
+        }
+    }
+
 }

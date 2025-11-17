@@ -16,7 +16,7 @@ namespace BudgetBuddy.App
         Exit
     }
     public enum ListScope { All, Month }
-    public enum StastsScope { Month, Year }
+    public enum StastsScope { Month, Yearly }
     public enum ExportFormat { Json, Csv }
     public class Warnings
     {
