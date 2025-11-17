@@ -25,6 +25,7 @@ namespace BudgetBuddy.Infrastructure.Export
             if (!overwrite && File.Exists(fileName))
             {
                 Logger.Warn("Export failed: Overwriting not permitted but file exists.");
+                return false;
             }
 
             var dir = Path.GetDirectoryName(Path.GetFullPath(fileName));

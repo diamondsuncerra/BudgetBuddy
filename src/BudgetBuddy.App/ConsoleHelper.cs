@@ -343,7 +343,7 @@ namespace BudgetBuddy.App
                 strategy = new JsonExportStrategy();
             }
             else
-            if (argText[0].Equals("json", StringComparison.OrdinalIgnoreCase))
+            if (argText[0].Equals("csv", StringComparison.OrdinalIgnoreCase))
             {
                 strategy = new CvsExportStrategy();
             }
@@ -359,8 +359,8 @@ namespace BudgetBuddy.App
 
             if (result)
             {
+                if (overwrite) return;
                 Logger.Info($"Succesfully exported data to file {fileName}, in format {argText[0]}.");
-                // overwrite???
             }
             else
             {
