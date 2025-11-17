@@ -53,6 +53,11 @@ public static class Extensions
         return date.ToString("yyyy-MM", CultureInfo.InvariantCulture);
     }
 
+    public static string ToMonthAndYear(this string year, int month)
+    {
+        return $"{year:D4}-{month:D2}";
+    }
+
     public static Result<decimal> TryDec(this string text)
     {
         if (decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out var value))
@@ -68,6 +73,18 @@ public static class Extensions
     public static Result<DateTime> TryDate(this string text)
     {
         if (DateTime.TryParseExact(text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            return Result<DateTime>.Ok(date);
+        }
+        else
+        {
+            return Result<DateTime>.Fail($"Invalid date: '{text}'");
+        }
+    }
+
+        public static Result<DateTime> TryYear(this string text)
+    {
+        if (DateTime.TryParseExact(text, "yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
         {
             return Result<DateTime>.Ok(date);
         }

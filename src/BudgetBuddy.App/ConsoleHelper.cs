@@ -338,27 +338,48 @@ namespace BudgetBuddy.App
                             Logger.Warn("Not a valid date.");
                             return;
                         }
-                        (decimal income, decimal expense, decimal net) = GetIncomeExpenseNetForMonth(month, repo);
-                        decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month, repo);
-                        IEnumerable<(string, decimal)> topCategories = GetTopExpenseCategoriesForMonth(month, repo, 3);
-                        
-                        Logger.Info($"For the month {month}");
-                        Logger.Info($"Income: {income}, Expense: {expense}, Net: {net}");
-                        Logger.Info($"Average size of a transaction was: {averageTransactionSize}");
-                        Logger.Info(topCategories.ToPrettyTable("USD"));
+                        GetMonthlyStats(month, repo);
 
                         break;
                     }
                 case StastsScope.Yearly:
                     {
-                        var all = repo.GetAll();
-                        var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(argText[1]));
-                        PrintTransactions(monthlyTransactions);
+                        var year = argText[1];
+                        if (string.IsNullOrWhiteSpace(year))
+                        {
+                            Logger.Warn("No year given.");
+                            return;
+                        }
+
+                        if (!year.TryYear().IsSuccess)
+                        {
+                            Logger.Warn("Not a valid year.");
+                            return;
+                        }
+
+                        for (int i = 1; i <= 12; i++)
+                        {
+                            var month = year.ToMonthAndYear(i);
+                            GetMonthlyStats(month, repo);
+                        }
+
+
                         break;
                     }
             }
         }
 
+        private static void GetMonthlyStats(string month, IRepository<Transaction, string> repo)
+        {
+            (decimal income, decimal expense, decimal net) = GetIncomeExpenseNetForMonth(month, repo);
+            decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month, repo);
+            IEnumerable<(string, decimal)> topCategories = GetTopExpenseCategoriesForMonth(month, repo, 3);
+
+            Logger.Info($"For the month {month}");
+            Logger.Info($"Income: {income}, Expense: {expense}, Net: {net}");
+            Logger.Info($"Average size of a transaction was: {averageTransactionSize}");
+            Logger.Info(topCategories.ToPrettyTable("USD"));
+        }
         public static async Task Export(string[]? argText, IRepository<Transaction, string> repo, CancellationToken token)
         {
 
@@ -484,7 +505,7 @@ namespace BudgetBuddy.App
         public static decimal GetAverageTransactionSizeForMonth(string month, IRepository<Transaction, string> repo)
         {
             var all = repo.GetAll();
-            var monthly = all.Where(t => t.Timestamp.MonthKey().Equals(month)).Select(t=>t.Amount);
+            var monthly = all.Where(t => t.Timestamp.MonthKey().Equals(month)).Select(t => t.Amount);
             return monthly.Any() ? monthly.AverageAbs() : 0m;
         }
 
