@@ -16,9 +16,15 @@ namespace BudgetBuddy.Domain
         public static void Warn(string message)
         {
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("[INFO]: {0}", message);
+            Console.WriteLine("[WARNING]: {0}", message);
             Console.ResetColor();
         }
-        
+        public static void Error(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("[ERROR]: {0}", message);
+            Console.ResetColor();
+        }
+
     }
 }

@@ -5,11 +5,11 @@ namespace BudgetBuddy.Infrastructure
     public class TransactionFactory
     {
         private const decimal MinAmount = -1_000_000m;
-        private const decimal MaxAmount =  1_000_000m;
+        private const decimal MaxAmount = 1_000_000m;
 
         public static Result<Transaction> TryCreate(string line)
         {
-         
+
             if (string.IsNullOrWhiteSpace(line))
                 return Result<Transaction>.Fail("Empty line.");
 
@@ -21,16 +21,19 @@ namespace BudgetBuddy.Infrastructure
                     $"Wrong column count: got {values.Length}, expected at least 5 (Id,Timestamp,Payee,Amount,Currency[,Category]). " +
                     $"Detected delimiter '{delimiter}'. Raw: {line}");
 
-            string id        = values[0].Trim();
-            string tsText    = values[1].Trim();
-            string payee     = values[2].Trim();
-            string amtText   = values[3].Trim();
-            string currency  = values[4].Trim();
-            string category  = values.Length >= 6 ? values[5].Trim() : string.Empty;
+            string id = values[0].Trim();
+            string tsText = values[1].Trim();
+            string payee = values[2].Trim();
+            string amtText = values[3].Trim();
+            string currency = values[4].Trim();
+            string category = values.Length >= 6 ? values[5].Trim() : string.Empty;
 
-            if (string.IsNullOrWhiteSpace(id))       return Result<Transaction>.Fail("Missing Id.");
-            if (string.IsNullOrWhiteSpace(payee))    return Result<Transaction>.Fail("Missing Payee.");
-            if (string.IsNullOrWhiteSpace(currency)) return Result<Transaction>.Fail("Missing Currency.");
+            if (string.IsNullOrWhiteSpace(id))
+                return Result<Transaction>.Fail("Missing Id.");
+            if (string.IsNullOrWhiteSpace(payee))
+                return Result<Transaction>.Fail("Missing Payee.");
+            if (string.IsNullOrWhiteSpace(currency))
+                return Result<Transaction>.Fail("Missing Currency.");
 
             var dateResult = tsText.TryDate();
             if (!dateResult.IsSuccess)
@@ -57,15 +60,15 @@ namespace BudgetBuddy.Infrastructure
             if (string.IsNullOrWhiteSpace(category))
                 category = "Uncategorized";
 
-    
+
             var tx = new Transaction
             {
-                Id        = id,
+                Id = id,
                 Timestamp = dateResult.Value!,
-                Payee     = payee,
-                Amount    = amount,
-                Currency  = currency,
-                Category  = category
+                Payee = payee,
+                Amount = amount,
+                Currency = currency,
+                Category = category
             };
 
             return Result<Transaction>.Ok(tx);

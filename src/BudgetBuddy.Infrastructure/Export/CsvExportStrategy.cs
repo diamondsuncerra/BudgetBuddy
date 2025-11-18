@@ -8,7 +8,7 @@ using BudgetBuddy.Domain;
 
 namespace BudgetBuddy.Infrastructure.Export
 {
-    public class CvsExportStrategy : IExportStrategy
+    public class CsvExportStrategy : IExportStrategy
     {
 
         public async Task<bool> Export(string fileName, IEnumerable<Transaction> data, CancellationToken token, bool overwrite)
@@ -57,7 +57,7 @@ namespace BudgetBuddy.Infrastructure.Export
                 return true;
             } catch (OperationCanceledException)
             {
-                Logger.Info("CVS export cancelled.");
+                Logger.Info("CSV export cancelled.");
                 return false;
             } catch (Exception ex)
             {

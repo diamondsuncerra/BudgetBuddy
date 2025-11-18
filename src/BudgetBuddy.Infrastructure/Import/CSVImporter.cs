@@ -33,7 +33,8 @@ namespace BudgetBuddy.Infrastructure.Import
                 }
             });
 
-            Logger.Info($"Imported: {totalImported}, Duplicates: {totalDuplicates}, Malformed: {totalMalformed}");
+            if(fileNames.Count() != 1) 
+                Logger.Info($"Total Imported: {totalImported}, Total Duplicates: {totalDuplicates}, Total Malformed: {totalMalformed}");
 
         }
         public async Task<(int imported, int duplicates, int malformed)> ReadOneFileAsync(string fileName, CancellationToken token)

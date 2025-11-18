@@ -10,7 +10,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        Console.WriteLine("Welcome to Budget Buddy!\nPlease choose one of the following:");
+        Console.WriteLine(Info.Welcome);
         ConsoleHelper.PrintAllOptions();
         IRepository<Transaction, string> repo = new TransactionsRepository();
         CSVImporter importer = new(repo);
@@ -21,7 +21,7 @@ public class Program
         {
             e.Cancel = true;
             cts.Cancel();
-            Console.WriteLine("Cancelling... please wait.");
+            Console.WriteLine(Info.CancellingMessage);
         };
 
         bool looping = true;
@@ -30,43 +30,68 @@ public class Program
 
             if (!ConsoleHelper.GetCommand(out ConsoleCommands command, out string[] argText))
             {
-                Logger.Warn(Warnings.INVALID_COMMAND);
+                Logger.Warn(Warnings.InvalidCommand);
                 continue;
             }
 
             switch (command)
             {
-                case ConsoleCommands.Import: await ConsoleHelper.Import(argText, repo, cts.Token); break;
+                case ConsoleCommands.Import:
+                    await ConsoleHelper.Import(argText, repo, cts.Token);
+                    break;
 
-                case ConsoleCommands.List: ConsoleHelper.List(argText, repo); break;
+                case ConsoleCommands.ListAll:
+                    ConsoleHelper.ListAll(repo);
+                    break;
+                case ConsoleCommands.ListMonth:
+                    ConsoleHelper.ListMonth(argText, repo);
+                    break;
+                case ConsoleCommands.ByCategory:
+                    ConsoleHelper.ByCategory(argText, repo);
+                    break;
 
-                case ConsoleCommands.ByCategory: ConsoleHelper.ByCategory(argText, repo);  break;
+                case ConsoleCommands.Over:
+                    ConsoleHelper.Over(argText, repo);
+                    break;
 
-                case ConsoleCommands.Over: ConsoleHelper.Over(argText, repo); break;
+                case ConsoleCommands.Search:
+                    ConsoleHelper.Search(argText, repo);
+                    break;
 
-                case ConsoleCommands.Search: ConsoleHelper.Search(argText, repo); break;
+                case ConsoleCommands.SetCategory:
+                    ConsoleHelper.SetCategory(argText, repo);
+                    break;
 
-                case ConsoleCommands.SetCategory: ConsoleHelper.SetCategory(argText, repo);  break;
+                case ConsoleCommands.RenameCategory:
+                    ConsoleHelper.RenameCategory(argText, repo);
+                    break;
 
-                case ConsoleCommands.RenameCategory: ConsoleHelper.RenameCategory(argText, repo);  break;
+                case ConsoleCommands.Remove:
+                    ConsoleHelper.Remove(argText, repo);
+                    break;
 
-                case ConsoleCommands.Remove: ConsoleHelper.Remove(argText, repo);  break;
+                case ConsoleCommands.StatsMonth:
+                    ConsoleHelper.StatsMonth(argText, repo);
+                    break;
+                case ConsoleCommands.StatsYearly:
+                    ConsoleHelper.StatsYearly(argText, repo);
+                    break;
 
-                case ConsoleCommands.Stats: ConsoleHelper.Stats(argText, repo); break;
-
-                case ConsoleCommands.Export: await ConsoleHelper.Export(argText, repo, cts.Token); break;
+                case ConsoleCommands.Export:
+                    await ConsoleHelper.Export(argText, repo, cts.Token);
+                    break;
 
                 case ConsoleCommands.Help:
                     ConsoleHelper.PrintAllOptions();
                     break;
 
                 case ConsoleCommands.Exit:
-                    Console.WriteLine("Exiting application. Goodbye!");
+                    Console.WriteLine(Info.ExitMessage);
                     looping = false;
                     break;
 
                 default:
-                    Console.WriteLine("Command not implemented yet.");
+                    Logger.Warn(Warnings.CommandNotImplemented);
                     break;
             }
 

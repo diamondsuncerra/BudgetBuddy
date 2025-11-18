@@ -1,160 +1,128 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using BudgetBuddy.Domain;
 using BudgetBuddy.Infrastructure.Export;
 using BudgetBuddy.Infrastructure.Import;
-using Microsoft.VisualBasic;
+
 
 namespace BudgetBuddy.App
 {
-    public class ConsoleHelper
+    public static class ConsoleHelper
     {
         public static void PrintAllOptions()
         {
-            Console.WriteLine("Import");
-            Console.WriteLine("List all");
-            Console.WriteLine("List month <yyyy-MM>");
-            Console.WriteLine("By category <name>");
-            Console.WriteLine("Over <amount>");
-            Console.WriteLine("Search <text>");
-            Console.WriteLine("Set category <id> <name>");
-            Console.WriteLine("Rename category <old> <new>");
-            Console.WriteLine("Remove <id>");
-            Console.WriteLine("Stats month <yyyy-MM>");
-            Console.WriteLine("Stats yearly <yyyy>");
-            Console.WriteLine("Export json <path>");
-            Console.WriteLine("Export cvs <path>"); // prompt for overwritting
-            Console.WriteLine("Help");
-            Console.WriteLine("Exit");
+            Console.WriteLine(ProperUsage.Import);
+            Console.WriteLine(ProperUsage.List);
+            Console.WriteLine(ProperUsage.ByCategory);
+            Console.WriteLine(ProperUsage.Over);
+            Console.WriteLine(ProperUsage.Search);
+            Console.WriteLine(ProperUsage.RenameCategory);
+            Console.WriteLine(ProperUsage.SetCategory);
+            Console.WriteLine(ProperUsage.Remove); // TOOD EXIT CODE 200 404    
+            Console.WriteLine(ProperUsage.Stats);
+            Console.WriteLine(ProperUsage.Export); // date time are si ora
+            Console.WriteLine(ProperUsage.Help);
+            Console.WriteLine(ProperUsage.Exit);
         }
 
         public static bool GetCommand(out ConsoleCommands command, out string[] args)
         {
-            var input = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                command = default;
-                args = Array.Empty<string>();
-                return false;
-            }
+            command = default;
+            args = Array.Empty<string>();
 
-            var parts = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var line = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(line))
+                return false;
+
+            var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 0)
-            {
-                command = default;
-                args = Array.Empty<string>();
                 return false;
-            }
-            var cmdText = parts[0];
-            if (cmdText.Equals("by", StringComparison.OrdinalIgnoreCase))
-            {
-                if (parts[1].Equals("category", StringComparison.OrdinalIgnoreCase))
-                {
-                    cmdText = "bycategory";
-                }
-                args = parts.Skip(2).ToArray();
 
-            }
-            else
-            if (cmdText.Equals("set", StringComparison.OrdinalIgnoreCase))
-            {
-                if (parts[1].Equals("category", StringComparison.OrdinalIgnoreCase))
-                {
-                    cmdText = "setcategory";
-                }
-                args = parts.Skip(2).ToArray();
+            // Normalize 1-word and 2-word command keys
+            static string Key(string a, string? b = null)
+                => b is null ? a.ToLowerInvariant() : $"{a.ToLowerInvariant()} {b.ToLowerInvariant()}";
 
-            }
-            else
-            if (cmdText.Equals("rename", StringComparison.OrdinalIgnoreCase))
-            {
-                if (parts[1].Equals("category", StringComparison.OrdinalIgnoreCase))
-                {
-                    cmdText = "renamecategory";
-                }
-                args = parts.Skip(2).ToArray();
 
+            var map = new Dictionary<string, ConsoleCommands>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["import"] = ConsoleCommands.Import,
+                ["list all"] = ConsoleCommands.ListAll,
+                ["list month"] = ConsoleCommands.ListMonth,
+                ["by category"] = ConsoleCommands.ByCategory,
+                ["over"] = ConsoleCommands.Over,
+                ["search"] = ConsoleCommands.Search,
+                ["set category"] = ConsoleCommands.SetCategory,
+                ["rename category"] = ConsoleCommands.RenameCategory,
+                ["remove"] = ConsoleCommands.Remove,
+                ["stats month"] = ConsoleCommands.StatsMonth,
+                ["stats yearly"] = ConsoleCommands.StatsYearly,
+                ["export"] = ConsoleCommands.Export,
+                ["help"] = ConsoleCommands.Help,
+                ["exit"] = ConsoleCommands.Exit
+            };
+
+            var name = parts[0];
+            var sub = parts.Length >= 2 ? parts[1] : null;
+
+            // Try 2-word command first
+            if (sub != null && map.TryGetValue(Key(name, sub), out command))
+            {
+                args = parts.Skip(2).ToArray();
+                return true;
             }
-            else
+
+
+            if (map.TryGetValue(Key(name), out command))
             {
                 args = parts.Skip(1).ToArray();
-
+                return true;
             }
 
-            if (!Enum.TryParse(cmdText, true, out command))
-            {
-                Console.WriteLine("Unknown command.");
-                return false;
-            }
-            return true;
+            return false;
         }
+
         public static async Task Import(string[]? argText, IRepository<Transaction, string> repo, CancellationToken token)
         {
-            CSVImporter importer = new(repo);
-            if (argText?.Length < 1)
-            {
-                Logger.Warn("Improper usage of import.");
-            }
+            if (!HasArgs(argText, 1, ProperUsage.Import))
+                return;
             try
             {
+                CSVImporter importer = new(repo);
                 await importer.ReadAllFilesAsync(argText!, token);
             }
             catch (OperationCanceledException)
             {
-                Logger.Info("Operation Canceled.");
+                Logger.Info(Info.CancellingMessage);
             }
         }
 
-        public static void List(string[]? argText, IRepository<Transaction, string> repo)
+        public static void ListAll(IRepository<Transaction, string> repo)
         {
-            if (argText?.Length < 1)
-            {
-                Logger.Warn("Improper usage of list.");
-                return;
-            }
-
-            if (!Enum.TryParse<ListScope>(argText![0], ignoreCase: true, out var scope))
-            {
-                Logger.Warn("Improper usage of list.");
-                return;
-            }
-
-            switch (scope)
-            {
-                case ListScope.All:
-                    {
-                        var all = repo.GetAll();
-                        PrintTransactions(all);
-                        break;
-                    }
-                case ListScope.Month:
-                    {
-                        if (!argText[1].TryMonth().IsSuccess)
-                        {
-                            Logger.Warn("Invalid Month");
-                            return;
-                        }
-                        var all = repo.GetAll();
-                        var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(argText[1]));
-                        PrintTransactions(monthlyTransactions);
-                        break;
-                    }
-            }
+            var all = repo.GetAll();
+            PrintTransactions(all);
         }
+        public static void ListMonth(string[]? argText, IRepository<Transaction, string> repo)
+        {
+            if (!HasArgs(argText, 1, ProperUsage.List))
+                return;
+
+            if (argText![0].TryMonth().IsSuccess)
+            {
+                var all = repo.GetAll();
+                var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(argText![0]));
+                PrintTransactions(monthlyTransactions);
+            }
+            else
+            {
+                Logger.Warn(Warnings.InvalidMonth);
+            }
+
+        }
+
+
 
         public static void Over(string[]? argText, IRepository<Transaction, string> repo)
         {
-            if (argText?.Length < 1)
-            {
-                Logger.Warn("Improper usage of over.");
+            if (!HasArgs(argText, 1, ProperUsage.Over))
                 return;
-            }
 
             if (!decimal.TryParse(argText?[0], out decimal amount))
             {
@@ -169,43 +137,36 @@ namespace BudgetBuddy.App
 
         }
 
-        public static void ByCategory(string?[] argText, IRepository<Transaction, string> repo)
+        public static void ByCategory(string[]? argText, IRepository<Transaction, string> repo)
         {
-            if (argText?.Length < 1)
-            {
-                Logger.Warn("Improper usage of by category.");
+            if (!HasArgs(argText, 1, ProperUsage.ByCategory))
                 return;
-            }
 
             var all = repo.GetAll();
             var byCategoryTransactions = all.Where(t => string.Equals(t.Category, argText![0], StringComparison.OrdinalIgnoreCase));
             PrintTransactions(byCategoryTransactions);
         }
 
-        public static void Search(string?[] argText, IRepository<Transaction, string> repo)
+        public static void Search(string[]? argText, IRepository<Transaction, string> repo)
         {
-            // sa fie fix pe fix ?
-            // ai grija daca cauti mai multe cuvinte
-            if (argText?.Length < 1)
-            {
-                Logger.Warn("Improper usage of search.");
+            if (!HasArgs(argText, 1, ProperUsage.Search))
                 return;
-            }
+
+            var terms = string.Join(' ', argText!).Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
             var all = repo.GetAll();
-            var searchTransactions =
-            all.Where(t => string.Equals(t.Payee, argText![0], StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(t.Category, argText![0], StringComparison.OrdinalIgnoreCase));
-            PrintTransactions(searchTransactions);
+            var hits = repo.GetAll().Where(t =>
+            terms.Any(term =>
+            t.Payee.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+            t.Category.Contains(term, StringComparison.OrdinalIgnoreCase)));
+
+            PrintTransactions(hits);
         }
 
-        public static void SetCategory(string?[] argText, IRepository<Transaction, string> repo)
+        public static void SetCategory(string[]? argText, IRepository<Transaction, string> repo)
         {
-            if (argText == null || argText?.Length < 2)
-            {
-                Logger.Warn("Improper usage of set category.");
+            if (!HasArgs(argText, 2, ProperUsage.SetCategory))
                 return;
-            }
 
             var id = argText![0];
             if (!repo.Contains(id!))
@@ -243,13 +204,11 @@ namespace BudgetBuddy.App
 
         }
 
-        public static void RenameCategory(string?[] argText, IRepository<Transaction, string> repo)
+        public static void RenameCategory(string[]? argText, IRepository<Transaction, string> repo)
         {
-            if (argText?.Length < 2)
-            {
-                Logger.Warn("Improper usage of rename category.");
+            if (!HasArgs(argText, 2, ProperUsage.RenameCategory))
                 return;
-            }
+
             var all = repo.GetAll();
             var oldCategoryName = argText![0];
             var transactions = all.Where(t => string.Equals(t.Category, oldCategoryName, StringComparison.OrdinalIgnoreCase));
@@ -277,13 +236,11 @@ namespace BudgetBuddy.App
 
         }
 
-        public static void Remove(string?[] argText, IRepository<Transaction, string> repo)
+        public static void Remove(string[]? argText, IRepository<Transaction, string> repo)
         {
-            if (argText == null || argText?.Length < 1)
-            {
-                Logger.Warn("Improper usage of remove.");
+            if (!HasArgs(argText, 1, ProperUsage.Remove))
                 return;
-            }
+
             var id = argText![0];
             if (id == null)
             {
@@ -303,71 +260,50 @@ namespace BudgetBuddy.App
 
         }
 
-        public static void Stats(string?[] argText, IRepository<Transaction, string> repo)
+        public static void StatsYearly(string[]? argText, IRepository<Transaction, string> repo)
         {
-            if (argText == null)
-            {
-                Logger.Warn("Improper usage of stats.");
+            if (!HasArgs(argText, 1, ProperUsage.Stats))
                 return;
-            }
-            if (argText.Length < 2)
-            {
-                Logger.Warn("Improper usage of stats.");
-                return;
-            }
 
-            if (!Enum.TryParse<StastsScope>(argText[0], ignoreCase: true, out var scope))
+            var year = argText![0];
+            if (string.IsNullOrWhiteSpace(year))
             {
-                Logger.Warn("Improper usage of stats.");
+                Logger.Warn("No year given.");
                 return;
             }
 
-            switch (scope)
+            if (!year.TryYear().IsSuccess)
             {
-                case StastsScope.Month:
-                    {
-                        var month = argText[1];
-                        if (string.IsNullOrWhiteSpace(month))
-                        {
-                            Logger.Warn("No month given.");
-                            return;
-                        }
+                Logger.Warn("Not a valid year.");
+                return;
+            }
 
-                        if (!month.TryMonth().IsSuccess)
-                        {
-                            Logger.Warn("Not a valid date.");
-                            return;
-                        }
-                        GetMonthlyStats(month, repo);
-
-                        break;
-                    }
-                case StastsScope.Yearly:
-                    {
-                        var year = argText[1];
-                        if (string.IsNullOrWhiteSpace(year))
-                        {
-                            Logger.Warn("No year given.");
-                            return;
-                        }
-
-                        if (!year.TryYear().IsSuccess)
-                        {
-                            Logger.Warn("Not a valid year.");
-                            return;
-                        }
-
-                        for (int i = 1; i <= 12; i++)
-                        {
-                            var month = year.ToMonthAndYear(i);
-                            GetMonthlyStats(month, repo);
-                        }
-
-
-                        break;
-                    }
+            for (int i = 1; i <= 12; i++)
+            {
+                var month = year.ToMonthAndYear(i);
+                GetMonthlyStats(month, repo);
             }
         }
+        public static void StatsMonth(string[]? argText, IRepository<Transaction, string> repo)
+        {
+            if (!HasArgs(argText, 1, ProperUsage.Stats))
+                return;
+            var month = argText![0];
+            if (string.IsNullOrWhiteSpace(month))
+            {
+                Logger.Warn("No month given.");
+                return;
+            }
+
+            if (!month.TryMonth().IsSuccess)
+            {
+                Logger.Warn("Not a valid date.");
+                return;
+            }
+            GetMonthlyStats(month, repo);
+        }
+
+
 
         private static void GetMonthlyStats(string month, IRepository<Transaction, string> repo)
         {
@@ -424,7 +360,7 @@ namespace BudgetBuddy.App
             else
             if (argText[0].Equals("csv", StringComparison.OrdinalIgnoreCase))
             {
-                strategy = new CvsExportStrategy();
+                strategy = new CsvExportStrategy();
             }
             else
             {
@@ -438,7 +374,8 @@ namespace BudgetBuddy.App
 
             if (result)
             {
-                if (overwrite) return;
+                if (overwrite)
+                    return;
                 Logger.Info($"Succesfully exported data to file {fileName}, in format {argText[0]}.");
             }
             else
@@ -450,7 +387,8 @@ namespace BudgetBuddy.App
         {
             if (!transactions.Any())
             {
-                Logger.Info(Info.NO_TRANSACTIONS_FOUND);
+                Logger.Info(Info.NoTransactionsFound);
+                return;
             }
 
             foreach (var t in transactions)
@@ -462,7 +400,8 @@ namespace BudgetBuddy.App
         {
             if (transaction == null)
             {
-                Logger.Info(Info.NO_TRANSACTIONS_FOUND);
+                Logger.Info(Info.NoTransactionsFound);
+                return;
             }
 
             Console.WriteLine(transaction);
@@ -520,5 +459,16 @@ namespace BudgetBuddy.App
             .Take(top);
 
         }
+
+        private static bool HasArgs(string[]? args, int min, string usage)
+        {
+            if (args is null || args.Length < min)
+            {
+                Logger.Warn($"Improper usage. Try: {usage}.");
+                return false;
+            }
+            return true;
+        }
+
     }
 }
