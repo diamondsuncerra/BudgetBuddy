@@ -25,8 +25,19 @@ namespace BudgetBuddy.App
         public const string CommandNotImplemented = "Command not implemented yet.";
         public const string ImproperUsage = "Improver usage of ";
         public const string InvalidMonth = "Invalid month";
+        public const string InvalidAmount = "Invalid amount";
+        public const string IdNotFound = "Id not found";
+        public const string NullNewCategory = "You must introduce a new category.";
+        public const string TransactionNotFound = "Transaction not found";
+        public const string CategoryNotFound = "Category not found";
+        public const string NullId = "Id must not be null.";
     }
 
+    public class Codes
+    {
+        public const string NotFound = "404 NOT FOUND.";
+        public const string Success = "200 OK.";
+    }
     public class Info
     {
         public const string NoTransactionsFound = "No transactions were found";
@@ -46,12 +57,12 @@ namespace BudgetBuddy.App
         public const string RenameCategory = "rename category <old> <new>";
         public const string Remove = "remove<id>";
         public const string Stats = "stats month <yyyy-MM>\nstats yearly<yyyy>";
-    
+
         public const string Export = "export json <path>\nexport csv <path>";
 
         public const string Help = "help";
-        public const string Exit= "exit";
-        
+        public const string Exit = "exit";
+
     }
 
     public enum HeaderFormat

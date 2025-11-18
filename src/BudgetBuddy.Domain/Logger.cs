@@ -25,6 +25,12 @@ namespace BudgetBuddy.Domain
             Console.WriteLine("[ERROR]: {0}", message);
             Console.ResetColor();
         }
+        public static void GreenInfo(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("[SUCCESS]: {0}", message);
+            Console.ResetColor();
+        }
 
     }
 }

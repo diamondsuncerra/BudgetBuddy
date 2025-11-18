@@ -126,15 +126,13 @@ namespace BudgetBuddy.App
 
             if (!decimal.TryParse(argText?[0], out decimal amount))
             {
-                Logger.Warn("Amount is not a number");
+                Logger.Warn(Warnings.InvalidAmount);
                 return;
             }
 
             var all = repo.GetAll();
             var overAmountTransactions = all.Where(t => t.Amount >= amount);
-
             PrintTransactions(overAmountTransactions);
-
         }
 
         public static void ByCategory(string[]? argText, IRepository<Transaction, string> repo)
@@ -171,27 +169,27 @@ namespace BudgetBuddy.App
             var id = argText![0];
             if (!repo.Contains(id!))
             {
-                Logger.Warn("Id not found");
+                Logger.Warn(Warnings.IdNotFound);
                 return;
             }
             var newCategoryName = argText![1];
 
             if (newCategoryName == null)
             {
-                Logger.Warn("You must introduce a new category.");
+                Logger.Warn(Warnings.NullNewCategory);
                 return;
             }
 
             if (!repo.TryGet(id!, out Transaction? transaction))
             {
-                Logger.Warn("Transaction not found");
+                Logger.Warn(Warnings.TransactionNotFound);
                 return;
             }
             else
             {
                 if (transaction == null)
                 {
-                    Logger.Warn("There is no transaction for that id.");
+                    Logger.Warn(Warnings.TransactionNotFound);
                     return;
                 }
                 else
@@ -214,7 +212,7 @@ namespace BudgetBuddy.App
             var transactions = all.Where(t => string.Equals(t.Category, oldCategoryName, StringComparison.OrdinalIgnoreCase));
             if (!transactions.Any())
             {
-                Logger.Warn("Category not found");
+                Logger.Warn(Warnings.CategoryNotFound);
                 return;
             }
 
@@ -222,7 +220,7 @@ namespace BudgetBuddy.App
 
             if (newCategoryName == null)
             {
-                Logger.Warn("You must introduce a new category.");
+                Logger.Warn(Warnings.NullNewCategory);
                 return;
             }
 
@@ -244,18 +242,18 @@ namespace BudgetBuddy.App
             var id = argText![0];
             if (id == null)
             {
-                Logger.Warn("Id must not be null.");
+                Logger.Warn(Warnings.NullId);
                 return;
             }
             if (!repo.Contains(id))
             {
-                Logger.Warn("Id not found");
+                Logger.Warn(Warnings.IdNotFound);
                 return;
             }
             else
             {
                 repo.Remove(id);
-                Logger.Info("Transaction successfully deleted.");
+                Logger.GreenInfo(Codes.Success);
             }
 
         }
