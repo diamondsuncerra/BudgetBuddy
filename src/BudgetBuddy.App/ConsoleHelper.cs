@@ -247,7 +247,8 @@ namespace BudgetBuddy.App
             }
             if (!repo.Contains(id))
             {
-                Logger.Warn(Warnings.IdNotFound);
+                //Logger.Error(Warnings.IdNotFound);
+                Logger.Error(Codes.NotFound);
                 return;
             }
             else
