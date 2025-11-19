@@ -20,6 +20,10 @@ namespace BudgetBuddy.Infrastructure
                 return Result<Transaction>.Fail(
                     $"Wrong column count: got {values.Length}, expected at least 5 (Id,Timestamp,Payee,Amount,Currency[,Category]). " +
                     $"Detected delimiter '{delimiter}'. Raw: {line}");
+            if (values.Length > 6)
+                return Result<Transaction>.Fail(
+                    $"Wrong column count: got {values.Length}, expected no more than 6 (Id,Timestamp,Payee,Amount,Currency[,Category]). " +
+                    $"Detected delimiter '{delimiter}'. Raw: {line}");
 
             string id = values[0].Trim();
             string tsText = values[1].Trim();

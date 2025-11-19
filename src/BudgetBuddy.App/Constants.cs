@@ -26,11 +26,15 @@ namespace BudgetBuddy.App
         public const string ImproperUsage = "Improver usage of ";
         public const string InvalidMonth = "Invalid month";
         public const string InvalidAmount = "Invalid amount";
+        public const string InvalidYear = "Invalid year";
+        public const string InvalidDate = "Invalid date";
         public const string IdNotFound = "Id not found";
         public const string NullNewCategory = "You must introduce a new category.";
         public const string TransactionNotFound = "Transaction not found";
         public const string CategoryNotFound = "Category not found";
         public const string NullId = "Id must not be null.";
+        public const string NoYearGiven = "No year given.";
+        public const string NoMonthGiven = "No month given";
     }
 
     public class Codes

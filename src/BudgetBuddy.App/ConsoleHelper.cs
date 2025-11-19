@@ -150,11 +150,9 @@ namespace BudgetBuddy.App
             if (!HasArgs(argText, 1, ProperUsage.Search))
                 return;
 
-            var terms = string.Join(' ', argText!).Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
             var all = repo.GetAll();
             var hits = repo.GetAll().Where(t =>
-            terms.Any(term =>
+            argText!.Any(term =>
             t.Payee.Contains(term, StringComparison.OrdinalIgnoreCase) ||
             t.Category.Contains(term, StringComparison.OrdinalIgnoreCase)));
 
@@ -169,7 +167,7 @@ namespace BudgetBuddy.App
             var id = argText![0];
             if (!repo.Contains(id!))
             {
-                Logger.Warn(Warnings.IdNotFound);
+                Logger.Error(Codes.NotFound);
                 return;
             }
             var newCategoryName = argText![1];
@@ -195,7 +193,8 @@ namespace BudgetBuddy.App
                 else
                 {
                     transaction.Category = newCategoryName;
-                    Logger.Info("Transaction category succesfully changed to: " + newCategoryName);
+                    Logger.GreenInfo(Codes.Success);
+                    Logger.GreenInfo("Transaction category changed to: " + newCategoryName);
                     PrintTransactions(transaction);
                 }
             }
@@ -210,6 +209,7 @@ namespace BudgetBuddy.App
             var all = repo.GetAll();
             var oldCategoryName = argText![0];
             var transactions = all.Where(t => string.Equals(t.Category, oldCategoryName, StringComparison.OrdinalIgnoreCase));
+
             if (!transactions.Any())
             {
                 Logger.Warn(Warnings.CategoryNotFound);
@@ -217,7 +217,7 @@ namespace BudgetBuddy.App
             }
 
             var newCategoryName = argText![1];
-
+            var transactionCount = transactions.Count();
             if (newCategoryName == null)
             {
                 Logger.Warn(Warnings.NullNewCategory);
@@ -228,9 +228,9 @@ namespace BudgetBuddy.App
             {
                 t.Category = newCategoryName;
             }
-
-            Logger.Info($"Category name changed succesfully from {oldCategoryName} to {newCategoryName}");
-            PrintTransactions(transactions); // bizar aici nu mai sunt tranzactii
+            
+            Logger.GreenInfo($"Category name changed  from {oldCategoryName} to {newCategoryName} for {transactionCount} records.");
+            PrintTransactions(all.Where(t => string.Equals(t.Category, newCategoryName, StringComparison.OrdinalIgnoreCase))); 
 
         }
 
@@ -247,7 +247,6 @@ namespace BudgetBuddy.App
             }
             if (!repo.Contains(id))
             {
-                //Logger.Error(Warnings.IdNotFound);
                 Logger.Error(Codes.NotFound);
                 return;
             }
@@ -267,13 +266,13 @@ namespace BudgetBuddy.App
             var year = argText![0];
             if (string.IsNullOrWhiteSpace(year))
             {
-                Logger.Warn("No year given.");
+                Logger.Warn(Warnings.NoYearGiven);
                 return;
             }
 
             if (!year.TryYear().IsSuccess)
             {
-                Logger.Warn("Not a valid year.");
+                Logger.Warn(Warnings.InvalidYear);
                 return;
             }
 
@@ -290,13 +289,13 @@ namespace BudgetBuddy.App
             var month = argText![0];
             if (string.IsNullOrWhiteSpace(month))
             {
-                Logger.Warn("No month given.");
+                Logger.Warn(Warnings.NoMonthGiven);
                 return;
             }
 
             if (!month.TryMonth().IsSuccess)
             {
-                Logger.Warn("Not a valid date.");
+                Logger.Warn(Warnings.InvalidDate);
                 return;
             }
             GetMonthlyStats(month, repo);
@@ -379,7 +378,7 @@ namespace BudgetBuddy.App
             }
             else
             {
-                Logger.Warn("Export failed.");
+                Logger.Error("Export failed.");
             }
         }
         public static void PrintTransactions(IEnumerable<Transaction> transactions)

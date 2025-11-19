@@ -10,7 +10,7 @@ Id,Timestamp,Payee,Amount,Currency,Category
 9,2025-01-10,Uber,-23.75,USD,Transport
 10,2025-01-11,Freelance Payment,450,USD,Income
 11,2025-01-13,Target,-54.10,USD,Groceries
-12,2025-01-14,Spotify,-10.99,USD,Entertainment
+12,2025-01-14,Spotify,-10.99,USD,Entertainment,
 13,2025-01-15,Home Rent,-1200,USD,Housing
 14,2025-01-17,Pharmacy,-32.40,USD,Health
 15,2025-01-19,Subway,-8.60,USD,Food
