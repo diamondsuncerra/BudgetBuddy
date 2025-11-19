@@ -28,6 +28,12 @@ namespace BudgetBuddy.Infrastructure.Export
                     return false;
                 }
 
+                foreach (var t in data)
+                {
+                    Logger.Info($"Preparing record {t.Id}...");
+                    await Task.Delay(100, token); // 100ms delay per record
+                }
+
                 var fullPath = Path.GetFullPath(fileName);
                 var dir = Path.GetDirectoryName(fullPath);
                 if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
@@ -55,11 +61,13 @@ namespace BudgetBuddy.Infrastructure.Export
                 await writer.FlushAsync();
 
                 return true;
-            } catch (OperationCanceledException)
+            }
+            catch (OperationCanceledException)
             {
                 Logger.Info("CSV export cancelled.");
                 return false;
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Logger.Warn($"Export failed: {ex.Message}");
                 return false;

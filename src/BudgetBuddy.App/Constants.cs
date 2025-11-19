@@ -34,6 +34,7 @@ namespace BudgetBuddy.App
         public const string CategoryNotFound = "Category not found";
         public const string NullId = "Id must not be null.";
         public const string NoYearGiven = "No year given.";
+        public const string FileNotFound = "File doesn't exist";
         public const string NoMonthGiven = "No month given";
     }
 

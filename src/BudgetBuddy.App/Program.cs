@@ -16,14 +16,6 @@ public class Program
         CSVImporter importer = new(repo);
 
 
-        using var cts = new CancellationTokenSource();
-        Console.CancelKeyPress += (s, e) =>
-        {
-            e.Cancel = true;
-            cts.Cancel();
-            Console.WriteLine(Info.CancellingMessage);
-        };
-
         bool looping = true;
         while (looping)
         {
@@ -37,7 +29,7 @@ public class Program
             switch (command)
             {
                 case ConsoleCommands.Import:
-                    await ConsoleHelper.Import(argText, repo, cts.Token);
+                    await ConsoleHelper.Import(argText, repo);
                     break;
 
                 case ConsoleCommands.ListAll:
@@ -78,7 +70,7 @@ public class Program
                     break;
 
                 case ConsoleCommands.Export:
-                    await ConsoleHelper.Export(argText, repo, cts.Token);
+                    await ConsoleHelper.Export(argText, repo);
                     break;
 
                 case ConsoleCommands.Help:

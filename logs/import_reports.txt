@@ -1,0 +1,30 @@
+[2025-11-19 17:51:44] april.csv → Imported: 17, Duplicates: 0, Malformed: 3
+[2025-11-19 17:51:44] jan.csv → Imported: 10, Duplicates: 10, Malformed: 0
+[2025-11-19 17:51:44] march.csv → Imported: 16, Duplicates: 4, Malformed: 0
+[2025-11-19 17:53:26] [april.csv] line 3 malformed: Invalid Amount '-102.3.40'. Expected a number like 1234.56 (InvariantCulture).
+[2025-11-19 17:53:27] [april.csv] line 15 malformed: Invalid Timestamp '12025-04-18'. Expected format yyyy-MM-dd.
+[2025-11-19 17:53:27] [april.csv] line 20 malformed: Invalid Timestamp '2025-04-320'. Expected format yyyy-MM-dd.
+[2025-11-19 17:53:27] april.csv → Imported: 17, Duplicates: 0, Malformed: 3
+[2025-11-19 17:53:27] jan.csv → Imported: 15, Duplicates: 5, Malformed: 0
+[2025-11-19 17:53:27] march.csv → Imported: 11, Duplicates: 9, Malformed: 0
+[2025-11-19 17:53:39] [april.csv] line 3 malformed: Invalid Amount '-102.3.40'. Expected a number like 1234.56 (InvariantCulture).
+[2025-11-19 17:53:40] data\april.csv → CANCELLED by user.
+[2025-11-19 17:53:40] data\jan.csv → CANCELLED by user.
+[2025-11-19 17:53:40] data\march.csv → CANCELLED by user.
+[2025-11-19 17:54:44] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-19 17:54:53] march.csv → Imported: 6, Duplicates: 14, Malformed: 0
+[2025-11-19 17:54:53] jan.csv → Imported: 0, Duplicates: 20, Malformed: 0
+[2025-11-19 18:05:16] data\jan.csv → CANCELLED by user.
+[2025-11-19 18:06:17] data\jan.csv → CANCELLED by user.
+[2025-11-19 18:06:26] jan.csv → Imported: 8, Duplicates: 12, Malformed: 0
+[2025-11-19 18:07:39] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-19 18:07:46] [april.csv] line 3 malformed: Invalid Amount '-102.3.40'. Expected a number like 1234.56 (InvariantCulture).
+[2025-11-19 18:07:47] [april.csv] line 15 malformed: Invalid Timestamp '12025-04-18'. Expected format yyyy-MM-dd.
+[2025-11-19 18:07:47] [april.csv] line 20 malformed: Invalid Timestamp '2025-04-320'. Expected format yyyy-MM-dd.
+[2025-11-19 18:07:47] april.csv → Imported: 17, Duplicates: 0, Malformed: 3
+[2025-11-19 18:07:47] march.csv → Imported: 6, Duplicates: 14, Malformed: 0
+[2025-11-19 18:10:28] [april.csv] line 3 malformed: Invalid Amount '-102.3.40'. Expected a number like 1234.56 (InvariantCulture).
+[2025-11-19 18:10:29] [april.csv] line 15 malformed: Invalid Timestamp '12025-04-18'. Expected format yyyy-MM-dd.
+[2025-11-19 18:10:29] [april.csv] line 20 malformed: Invalid Timestamp '2025-04-320'. Expected format yyyy-MM-dd.
+[2025-11-19 18:10:29] april.csv → Imported: 17, Duplicates: 0, Malformed: 3
+[2025-11-19 18:10:29] march.csv → Imported: 20, Duplicates: 0, Malformed: 0

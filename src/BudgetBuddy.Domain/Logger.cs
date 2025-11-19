@@ -7,6 +7,26 @@ namespace BudgetBuddy.Domain
 {
     public class Logger
     {
+        private static readonly object _lock = new();
+        public static void ImportReport(string message)
+        {
+            const string reportPath = "logs/import_reports.txt";
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(reportPath)!);
+                lock (_lock)
+                {
+                    File.AppendAllText(reportPath,
+                        $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"[LOGGER ERROR]: Failed to write import report: {ex.Message}");
+                Console.ResetColor();
+            }
+        }
         public static void Info(string message)
         {
             Console.ForegroundColor = ConsoleColor.Cyan;

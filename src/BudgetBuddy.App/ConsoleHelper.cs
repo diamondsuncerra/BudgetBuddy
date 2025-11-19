@@ -79,20 +79,37 @@ namespace BudgetBuddy.App
             return false;
         }
 
-        public static async Task Import(string[]? argText, IRepository<Transaction, string> repo, CancellationToken token)
+        public static async Task Import(string[]? argText, IRepository<Transaction, string> repo)
         {
             if (!HasArgs(argText, 1, ProperUsage.Import))
                 return;
+
+            using var cts = new CancellationTokenSource();
+
+            ConsoleCancelEventHandler? handler = (s, e) =>
+            {
+                e.Cancel = true;
+                cts.Cancel();
+            };
+
+            Console.CancelKeyPress += handler;
+
             try
             {
-                CSVImporter importer = new(repo);
-                await importer.ReadAllFilesAsync(argText!, token);
+                var importer = new CSVImporter(repo);
+                await importer.ReadAllFilesAsync(argText!, cts.Token);
             }
             catch (OperationCanceledException)
             {
                 Logger.Info(Info.CancellingMessage);
             }
+            finally
+            {
+                // Ca sa pot relua importul
+                Console.CancelKeyPress -= handler;
+            }
         }
+
 
         public static void ListAll(IRepository<Transaction, string> repo)
         {
@@ -320,33 +337,12 @@ namespace BudgetBuddy.App
             Logger.Info($"Average size of a transaction was: {averageTransactionSize}");
             Logger.Info(topCategories.ToPrettyTable("USD"));
         }
-        public static async Task Export(string[]? argText, IRepository<Transaction, string> repo, CancellationToken token)
+        public static async Task Export(string[]? argText, IRepository<Transaction, string> repo)
         {
 
-            if (argText == null)
-            {
-                Logger.Warn("Improper usage of export.");
-                return;
-            }
-
-            if (argText.Length < 2)
-            {
-                Logger.Warn("Improper usage of export.");
+            if (!HasArgs(argText, 2, ProperUsage.Export))
                 return;
 
-            }
-
-            if (string.IsNullOrWhiteSpace(argText[0]))
-            {
-                Logger.Warn("Improper usage of export.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(argText[1]))
-            {
-                Logger.Warn("Improper usage of export.");
-                return;
-            }
 
             if (repo.Count() == 0)
             {
@@ -355,7 +351,7 @@ namespace BudgetBuddy.App
             }
 
             IExportStrategy strategy;
-            string fileName = argText[1];
+            string fileName = argText![1];
 
             if (argText[0].Equals("json", StringComparison.OrdinalIgnoreCase))
             {
@@ -372,19 +368,42 @@ namespace BudgetBuddy.App
                 return;
             }
 
-            Exporter exporter = new Exporter(strategy);
-            bool overwrite = ConfirmOverwrite(fileName);
-            bool result = await exporter.Run(fileName, repo.GetAll(), token, overwrite);
+            using var cts = new CancellationTokenSource();
 
-            if (result)
+            ConsoleCancelEventHandler? handler = (s, e) =>
             {
-                if (!overwrite)
-                    return;
-                Logger.Info($"Succesfully exported data to file {fileName}, in format {argText[0]}.");
+                e.Cancel = true;
+                Logger.Warn("Cancelling export.");
+                cts.Cancel();
+
+            };
+
+            Console.CancelKeyPress += handler;
+
+            try
+            {
+                Exporter exporter = new(strategy);
+                bool overwrite = ConfirmOverwrite(fileName);
+                bool result = await exporter.Run(fileName, repo.GetAll(), cts.Token, overwrite);
+
+                if (result)
+                {
+                    if (!overwrite)
+                        return;
+                    Logger.Info($"Successfully exported data to file {fileName}, in format {argText[0]}.");
+                }
+                else
+                {
+                    Logger.Error("Export failed.");
+                }
             }
-            else
+            catch (OperationCanceledException)
             {
-                Logger.Error("Export failed.");
+                Logger.Info("Export cancelled by user.");
+            }
+            finally
+            {
+                Console.CancelKeyPress -= handler;
             }
         }
         public static void PrintTransactions(IEnumerable<Transaction> transactions)
@@ -471,6 +490,13 @@ namespace BudgetBuddy.App
                 Logger.Warn($"Improper usage. Try: {usage}.");
                 return false;
             }
+
+            if (args.Take(min).Any(a => string.IsNullOrWhiteSpace(a)))
+            {
+                Logger.Warn($"Improper usage. Try: {usage}.");
+                return false;
+            }
+
             return true;
         }
 

@@ -40,6 +40,11 @@ namespace BudgetBuddy.Infrastructure.Export
 
             await using var fs = new FileStream(fileName, FileMode.Create, FileAccess.Write, FileShare.None);
 
+            foreach (var t in data)
+            {
+                Logger.Info($"Preparing record {t.Id}...");
+                await Task.Delay(100, token); // 100ms delay per record
+            }
 
             var formatedData = data.Select(t => new
             {
