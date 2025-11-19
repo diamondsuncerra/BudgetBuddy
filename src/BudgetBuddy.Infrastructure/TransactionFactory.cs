@@ -46,7 +46,7 @@ namespace BudgetBuddy.Infrastructure
 
             if (amtText.Contains(',') && !amtText.Contains('.'))
             {
-                // Keep strict per spec; guide the user:
+
                 return Result<Transaction>.Fail(
                     $"Invalid Amount '{amtText}'. Use dot as decimal separator (InvariantCulture), e.g., 1234.56");
             }

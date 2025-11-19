@@ -17,7 +17,7 @@ namespace BudgetBuddy.Domain
 
         public override string ToString()
         {
-            return $"{Id}, {Timestamp}, {Payee}, {Amount}, {Currency}, {Category}";
+            return $"{Id}, {Timestamp:yyyy-MM-dd}, {Payee}, {Amount}, {Currency}, {Category}";
         }
     }
 }

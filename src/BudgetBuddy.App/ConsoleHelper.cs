@@ -16,7 +16,7 @@ namespace BudgetBuddy.App
             Console.WriteLine(ProperUsage.Search);
             Console.WriteLine(ProperUsage.RenameCategory);
             Console.WriteLine(ProperUsage.SetCategory);
-            Console.WriteLine(ProperUsage.Remove); // TOOD EXIT CODE 200 404    
+            Console.WriteLine(ProperUsage.Remove);
             Console.WriteLine(ProperUsage.Stats);
             Console.WriteLine(ProperUsage.Export); // date time are si ora
             Console.WriteLine(ProperUsage.Help);
@@ -130,8 +130,14 @@ namespace BudgetBuddy.App
                 return;
             }
 
+            if (amount <= 0)
+            {
+                Logger.Warn(Warnings.InvalidAmount);
+                return;
+            }
+
             var all = repo.GetAll();
-            var overAmountTransactions = all.Where(t => t.Amount >= amount);
+            var overAmountTransactions = all.Where(t => t.Amount <= -amount && t.Amount < 0);
             PrintTransactions(overAmountTransactions);
         }
 
@@ -228,9 +234,9 @@ namespace BudgetBuddy.App
             {
                 t.Category = newCategoryName;
             }
-            
+
             Logger.GreenInfo($"Category name changed  from {oldCategoryName} to {newCategoryName} for {transactionCount} records.");
-            PrintTransactions(all.Where(t => string.Equals(t.Category, newCategoryName, StringComparison.OrdinalIgnoreCase))); 
+            PrintTransactions(all.Where(t => string.Equals(t.Category, newCategoryName, StringComparison.OrdinalIgnoreCase)));
 
         }
 
@@ -372,7 +378,7 @@ namespace BudgetBuddy.App
 
             if (result)
             {
-                if (overwrite)
+                if (!overwrite)
                     return;
                 Logger.Info($"Succesfully exported data to file {fileName}, in format {argText[0]}.");
             }

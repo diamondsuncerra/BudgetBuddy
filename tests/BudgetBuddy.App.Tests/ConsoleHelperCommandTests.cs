@@ -17,7 +17,7 @@ namespace BudgetBuddy.App.Tests
             repo.Setup(r => r.Contains("2")).Returns(true);
             repo.Setup(r => r.TryGet("2", out tx)).Returns(true);
 
-            ConsoleHelper.SetCategory(new[] { "2", "Dining" }, repo.Object);
+            ConsoleHelper.SetCategory(["2", "Dining"], repo.Object);
 
             Assert.Equal("Dining", tx.Category);
             repo.Verify(r => r.TryGet("2", out tx), Times.Once);
@@ -29,7 +29,7 @@ namespace BudgetBuddy.App.Tests
             var repo = new Mock<IRepository<Transaction, string>>();
             repo.Setup(r => r.Contains("999")).Returns(false);
 
-            ConsoleHelper.SetCategory(new[] { "999", "Anything" }, repo.Object);
+            ConsoleHelper.SetCategory(["999", "Anything"], repo.Object);
 
             Transaction? ignored;
             repo.Verify(r => r.TryGet("999", out ignored!), Times.Never);
