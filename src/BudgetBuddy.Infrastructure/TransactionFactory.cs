@@ -1,5 +1,5 @@
 ﻿using BudgetBuddy.Domain;
-
+using BudgetBuddy.Domain.Extensions;
 namespace BudgetBuddy.Infrastructure
 {
     public class TransactionFactory

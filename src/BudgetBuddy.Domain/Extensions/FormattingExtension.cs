@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
-namespace BudgetBuddy.Domain.Extensions
+namespace BudgetBuddy.Domain.Extensions;
 
 public static class FormattingExtensions
 {
@@ -31,9 +31,4 @@ public static class FormattingExtensions
     }
 
 
-
-
-
-
-  
 }

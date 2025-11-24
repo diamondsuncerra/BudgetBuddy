@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace BudgetBuddy.Domain.Extensions
 {
-    public class DecimalExtensions
+    public static class DecimalExtensions
     {
         public static decimal SumAbs(this decimal a, decimal b)
         {

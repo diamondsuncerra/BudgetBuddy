@@ -1,3 +1,4 @@
+using BudgetBuddy.Domain.Extensions;
 using BudgetBuddy.Domain;
 using BudgetBuddy.Infrastructure.Export;
 using BudgetBuddy.Infrastructure.Import;
@@ -5,9 +6,15 @@ using BudgetBuddy.Infrastructure.Import;
 
 namespace BudgetBuddy.App
 {
-    public static class ConsoleHelper
+    public class ConsoleHelper
     {
-        public static void PrintAllOptions()
+        private IRepository<Transaction, string> _repository;
+
+        public ConsoleHelper(IRepository<Transaction, string> repository)
+        {
+            _repository = repository;
+        }
+        public  void PrintAllOptions()
         {
             Console.WriteLine(ProperUsage.Import);
             Console.WriteLine(ProperUsage.List);
@@ -23,7 +30,7 @@ namespace BudgetBuddy.App
             Console.WriteLine(ProperUsage.Exit);
         }
 
-        public static bool GetCommand(out ConsoleCommands command, out string[] args)
+        public  bool GetCommand(out ConsoleCommands command, out string[] args)
         {
             command = default;
             args = Array.Empty<string>();
@@ -79,7 +86,7 @@ namespace BudgetBuddy.App
             return false;
         }
 
-        public static async Task Import(string[]? argText, IRepository<Transaction, string> repo, CSVImporter importer)
+        public  async Task Import(string[]? argText, CSVImporter importer)
         {
             if (!HasArgs(argText, 1, ProperUsage.Import))
                 return;
@@ -111,19 +118,19 @@ namespace BudgetBuddy.App
         }
 
 
-        public static void ListAll(IRepository<Transaction, string> repo)
+        public  void ListAll()
         {
-            var all = repo.GetAll();
+            var all = _repository.GetAll();
             PrintTransactions(all);
         }
-        public static void ListMonth(string[]? argText, IRepository<Transaction, string> repo)
+        public  void ListMonth(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.List))
                 return;
 
             if (argText![0].TryMonth().IsSuccess)
             {
-                var all = repo.GetAll();
+                var all = _repository.GetAll();
                 var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(argText![0]));
                 PrintTransactions(monthlyTransactions);
             }
@@ -136,7 +143,7 @@ namespace BudgetBuddy.App
 
 
 
-        public static void Over(string[]? argText, IRepository<Transaction, string> repo)
+        public  void Over(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Over))
                 return;
@@ -153,28 +160,28 @@ namespace BudgetBuddy.App
                 return;
             }
 
-            var all = repo.GetAll();
+            var all = _repository.GetAll();
             var overAmountTransactions = all.Where(t => t.Amount <= -amount && t.Amount < 0);
             PrintTransactions(overAmountTransactions);
         }
 
-        public static void ByCategory(string[]? argText, IRepository<Transaction, string> repo)
+        public  void ByCategory(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.ByCategory))
                 return;
 
-            var all = repo.GetAll();
+            var all = _repository.GetAll();
             var byCategoryTransactions = all.Where(t => string.Equals(t.Category, argText![0], StringComparison.OrdinalIgnoreCase));
             PrintTransactions(byCategoryTransactions);
         }
 
-        public static void Search(string[]? argText, IRepository<Transaction, string> repo)
+        public  void Search(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Search))
                 return;
 
-            var all = repo.GetAll();
-            var hits = repo.GetAll().Where(t =>
+            var all = _repository.GetAll();
+            var hits = _repository.GetAll().Where(t =>
             argText!.Any(term =>
             t.Payee.Contains(term, StringComparison.OrdinalIgnoreCase) ||
             t.Category.Contains(term, StringComparison.OrdinalIgnoreCase)));
@@ -182,13 +189,13 @@ namespace BudgetBuddy.App
             PrintTransactions(hits);
         }
 
-        public static void SetCategory(string[]? argText, IRepository<Transaction, string> repo)
+        public  void SetCategory(string[]? argText)
         {
             if (!HasArgs(argText, 2, ProperUsage.SetCategory))
                 return;
 
             var id = argText![0];
-            if (!repo.Contains(id!))
+            if (!_repository.Contains(id!))
             {
                 Logger.Error(Codes.NotFound);
                 return;
@@ -201,7 +208,7 @@ namespace BudgetBuddy.App
                 return;
             }
 
-            if (!repo.TryGet(id!, out Transaction? transaction))
+            if (!_repository.TryGet(id!, out Transaction? transaction))
             {
                 Logger.Warn(Warnings.TransactionNotFound);
                 return;
@@ -224,12 +231,12 @@ namespace BudgetBuddy.App
 
         }
 
-        public static void RenameCategory(string[]? argText, IRepository<Transaction, string> repo)
+        public  void RenameCategory(string[]? argText)
         {
             if (!HasArgs(argText, 2, ProperUsage.RenameCategory))
                 return;
 
-            var all = repo.GetAll();
+            var all = _repository.GetAll();
             var oldCategoryName = argText![0];
             var transactions = all.Where(t => string.Equals(t.Category, oldCategoryName, StringComparison.OrdinalIgnoreCase));
 
@@ -257,7 +264,7 @@ namespace BudgetBuddy.App
 
         }
 
-        public static void Remove(string[]? argText, IRepository<Transaction, string> repo)
+        public  void Remove(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Remove))
                 return;
@@ -268,20 +275,20 @@ namespace BudgetBuddy.App
                 Logger.Warn(Warnings.NullId);
                 return;
             }
-            if (!repo.Contains(id))
+            if (!_repository.Contains(id))
             {
                 Logger.Error(Codes.NotFound);
                 return;
             }
             else
             {
-                repo.Remove(id);
+                _repository.Remove(id);
                 Logger.GreenInfo(Codes.Success);
             }
 
         }
 
-        public static void StatsYearly(string[]? argText, IRepository<Transaction, string> repo)
+        public  void StatsYearly(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Stats))
                 return;
@@ -302,10 +309,10 @@ namespace BudgetBuddy.App
             for (int i = 1; i <= 12; i++)
             {
                 var month = year.ToMonthAndYear(i);
-                GetMonthlyStats(month, repo);
+                GetMonthlyStats(month);
             }
         }
-        public static void StatsMonth(string[]? argText, IRepository<Transaction, string> repo)
+        public  void StatsMonth(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Stats))
                 return;
@@ -321,30 +328,28 @@ namespace BudgetBuddy.App
                 Logger.Warn(Warnings.InvalidDate);
                 return;
             }
-            GetMonthlyStats(month, repo);
+            GetMonthlyStats(month);
         }
 
-
-
-        private static void GetMonthlyStats(string month, IRepository<Transaction, string> repo)
+        private  void GetMonthlyStats(string month)
         {
-            (decimal income, decimal expense, decimal net) = GetIncomeExpenseNetForMonth(month, repo);
-            decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month, repo);
-            IEnumerable<(string, decimal)> topCategories = GetTopExpenseCategoriesForMonth(month, repo, 3);
+            (decimal income, decimal expense, decimal net) = GetIncomeExpenseNetForMonth(month);
+            decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month);
+            IEnumerable<(string, decimal)> topCategories = GetTopExpenseCategoriesForMonth(month, 3);
 
             Logger.Info($"For the month {month}");
             Logger.Info($"Income: {income}, Expense: {expense}, Net: {net}");
             Logger.Info($"Average size of a transaction was: {averageTransactionSize}");
             Logger.Info(topCategories.ToPrettyTable("USD"));
         }
-        public static async Task Export(string[]? argText, IRepository<Transaction, string> repo)
+        public async Task Export(string[]? argText)
         {
 
             if (!HasArgs(argText, 2, ProperUsage.Export))
                 return;
 
 
-            if (repo.Count() == 0)
+            if (_repository.Count() == 0)
             {
                 Logger.Info("No data found to export.");
                 return;
@@ -384,7 +389,7 @@ namespace BudgetBuddy.App
             {
                 Exporter exporter = new(strategy);
                 bool overwrite = ConfirmOverwrite(fileName);
-                bool result = await exporter.Run(fileName, repo.GetAll(), cts.Token, overwrite);
+                bool result = await exporter.Run(fileName, _repository.GetAll(), cts.Token, overwrite);
 
                 if (result)
                 {
@@ -406,7 +411,7 @@ namespace BudgetBuddy.App
                 Console.CancelKeyPress -= handler;
             }
         }
-        public static void PrintTransactions(IEnumerable<Transaction> transactions)
+        public  void PrintTransactions(IEnumerable<Transaction> transactions)
         {
             if (!transactions.Any())
             {
@@ -419,7 +424,7 @@ namespace BudgetBuddy.App
                 Console.WriteLine(t);
             }
         }
-        private static void PrintTransactions(Transaction transaction)
+        private  void PrintTransactions(Transaction transaction)
         {
             if (transaction == null)
             {
@@ -431,7 +436,7 @@ namespace BudgetBuddy.App
 
         }
 
-        public static bool ConfirmOverwrite(string fileName)
+        public  bool ConfirmOverwrite(string fileName)
         {
             if (!File.Exists(fileName))
                 return true;
@@ -448,10 +453,10 @@ namespace BudgetBuddy.App
         }
 
 
-        public static (decimal, decimal, decimal) GetIncomeExpenseNetForMonth(string month, IRepository<Transaction, string> repo)
+        public  (decimal, decimal, decimal) GetIncomeExpenseNetForMonth(string month)
         {
             decimal income = 0m, expense = 0m;
-            var all = repo.GetAll();
+            var all = _repository.GetAll();
             var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
 
             var incomeTransactions = monthlyTransactions.Where(t => t.Amount > 0m).Select(t => t.Amount);
@@ -464,16 +469,16 @@ namespace BudgetBuddy.App
             return (income, expense, net);
         }
 
-        public static decimal GetAverageTransactionSizeForMonth(string month, IRepository<Transaction, string> repo)
+        public decimal GetAverageTransactionSizeForMonth(string month)
         {
-            var all = repo.GetAll();
+            var all = _repository.GetAll();
             var monthly = all.Where(t => t.Timestamp.MonthKey().Equals(month)).Select(t => t.Amount);
             return monthly.Any() ? monthly.AverageAbs() : 0m;
         }
 
-        public static IEnumerable<(string Category, decimal Total)> GetTopExpenseCategoriesForMonth(string month, IRepository<Transaction, string> repo, int top)
+        public  IEnumerable<(string Category, decimal Total)> GetTopExpenseCategoriesForMonth(string month, int top)
         {
-            var all = repo.GetAll();
+            var all = _repository.GetAll();
             var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
             return monthlyTransactions.Where(t => t.Amount < 0m)
             .GroupBy(t => t.Category)

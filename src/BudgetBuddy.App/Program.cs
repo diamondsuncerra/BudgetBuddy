@@ -10,17 +10,17 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
+        IRepository<Transaction, string> repository = new TransactionsRepository();
+        ConsoleHelper handler = new ConsoleHelper(repository);
+        CSVImporter importer = new(repository);
         Console.WriteLine(Info.Welcome);
-        ConsoleHelper.PrintAllOptions();
-        IRepository<Transaction, string> repo = new TransactionsRepository();
-        CSVImporter importer = new(repo);
-
+        handler.PrintAllOptions();
 
         bool looping = true;
         while (looping)
         {
 
-            if (!ConsoleHelper.GetCommand(out ConsoleCommands command, out string[] argText))
+            if (!handler.GetCommand(out ConsoleCommands command, out string[] argText))
             {
                 Logger.Warn(Warnings.InvalidCommand);
                 continue;
@@ -29,52 +29,52 @@ public class Program
             switch (command)
             {
                 case ConsoleCommands.Import:
-                    await ConsoleHelper.Import(argText, repo, importer);
+                    await handler.Import(argText,  importer);
                     break;
 
                 case ConsoleCommands.ListAll:
-                    ConsoleHelper.ListAll(repo);
+                    handler.ListAll();
                     break;
                 case ConsoleCommands.ListMonth:
-                    ConsoleHelper.ListMonth(argText, repo);
+                    handler.ListMonth(argText);
                     break;
                 case ConsoleCommands.ByCategory:
-                    ConsoleHelper.ByCategory(argText, repo);
+                    handler.ByCategory(argText);
                     break;
 
                 case ConsoleCommands.Over:
-                    ConsoleHelper.Over(argText, repo);
+                    handler.Over(argText);
                     break;
 
                 case ConsoleCommands.Search:
-                    ConsoleHelper.Search(argText, repo);
+                    handler.Search(argText);
                     break;
 
                 case ConsoleCommands.SetCategory:
-                    ConsoleHelper.SetCategory(argText, repo);
+                    handler.SetCategory(argText);
                     break;
 
                 case ConsoleCommands.RenameCategory:
-                    ConsoleHelper.RenameCategory(argText, repo);
+                    handler.RenameCategory(argText);
                     break;
 
                 case ConsoleCommands.Remove:
-                    ConsoleHelper.Remove(argText, repo);
+                    handler.Remove(argText);
                     break;
 
                 case ConsoleCommands.StatsMonth:
-                    ConsoleHelper.StatsMonth(argText, repo);
+                    handler.StatsMonth(argText);
                     break;
                 case ConsoleCommands.StatsYearly:
-                    ConsoleHelper.StatsYearly(argText, repo);
+                    handler.StatsYearly(argText);
                     break;
 
                 case ConsoleCommands.Export:
-                    await ConsoleHelper.Export(argText, repo);
+                    await handler.Export(argText);
                     break;
 
                 case ConsoleCommands.Help:
-                    ConsoleHelper.PrintAllOptions();
+                    handler.PrintAllOptions();
                     break;
 
                 case ConsoleCommands.Exit:

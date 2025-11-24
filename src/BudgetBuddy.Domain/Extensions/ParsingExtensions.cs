@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace BudgetBuddy.Domain.Extensions
 {
-    public class ParsingExtentions
+    public static class ParsingExtentions
     {
           public static Result<DateTime> TryDate(this string text)
     {
