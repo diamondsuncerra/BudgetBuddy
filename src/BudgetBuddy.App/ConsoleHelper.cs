@@ -18,7 +18,7 @@ namespace BudgetBuddy.App
             Console.WriteLine(ProperUsage.SetCategory);
             Console.WriteLine(ProperUsage.Remove);
             Console.WriteLine(ProperUsage.Stats);
-            Console.WriteLine(ProperUsage.Export); // date time are si ora
+            Console.WriteLine(ProperUsage.Export); 
             Console.WriteLine(ProperUsage.Help);
             Console.WriteLine(ProperUsage.Exit);
         }
