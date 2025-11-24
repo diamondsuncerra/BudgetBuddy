@@ -5,14 +5,18 @@ using System.Threading.Tasks;
 using BudgetBuddy.Domain;
 using BudgetBuddy.Infrastructure;
 using BudgetBuddy.Infrastructure.Import;
+using BudgetBuddy.Infrastructure.Log;
 
 public class Program
 {
     public static async Task Main(string[] args)
     {
         IRepository<Transaction, string> repository = new TransactionsRepository();
-        ConsoleHelper handler = new ConsoleHelper(repository);
-        CSVImporter importer = new(repository);
+        ILogger consoleLoger = new ConsoleLogger();
+        ILogger fileLogger = new FileLogger();
+        CSVImporter importer = new(repository, fileLogger);
+        ConsoleHelper handler = new ConsoleHelper(repository, consoleLoger, importer);
+
         Console.WriteLine(Info.Welcome);
         handler.PrintAllOptions();
 
@@ -22,14 +26,14 @@ public class Program
 
             if (!handler.GetCommand(out ConsoleCommands command, out string[] argText))
             {
-                Logger.Warn(Warnings.InvalidCommand);
+                consoleLoger.Warn(Warnings.InvalidCommand);
                 continue;
             }
 
             switch (command)
             {
                 case ConsoleCommands.Import:
-                    await handler.Import(argText,  importer);
+                    await handler.Import(argText);
                     break;
 
                 case ConsoleCommands.ListAll:
@@ -83,7 +87,7 @@ public class Program
                     break;
 
                 default:
-                    Logger.Warn(Warnings.CommandNotImplemented);
+                    consoleLoger.Warn(Warnings.CommandNotImplemented);
                     break;
             }
 

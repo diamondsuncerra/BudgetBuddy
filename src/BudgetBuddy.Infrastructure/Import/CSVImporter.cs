@@ -12,11 +12,13 @@ namespace BudgetBuddy.Infrastructure.Import
     public class CSVImporter
     {
         private readonly IRepository<Transaction, string> _repo;
+        private readonly ILogger _logger;
         private readonly object lockObj = new();
 
-        public CSVImporter(IRepository<Transaction, string> repository)
+        public CSVImporter(IRepository<Transaction, string> repository, ILogger logger)
         {
             _repo = repository;
+            _logger = logger;
         }
 
         public async Task ReadAllFilesAsync(IEnumerable<string> fileNames, CancellationToken token)
@@ -37,7 +39,7 @@ namespace BudgetBuddy.Infrastructure.Import
             });
 
             if (fileNames.Count() != 1)
-                Logger.Info($"Total Imported: {totalImported}, Total Duplicates: {totalDuplicates}, Total Malformed: {totalMalformed}");
+                _logger.Info($"Total Imported: {totalImported}, Total Duplicates: {totalDuplicates}, Total Malformed: {totalMalformed}");
         }
 
         public async Task<(int imported, int duplicates, int malformed)> ReadOneFileAsync(string fileName, CancellationToken token)
@@ -46,7 +48,7 @@ namespace BudgetBuddy.Infrastructure.Import
             {
                 if (!File.Exists(fileName))
                 {
-                    Logger.Warn($"[{fileName}] File doesn't exist");
+                    _logger.Warn($"[{fileName}] File doesn't exist");
                     return (0, 0, 0);
                 }
 
@@ -60,7 +62,7 @@ namespace BudgetBuddy.Infrastructure.Import
                 int processed = 0;
                 int lastProgress = -1;
 
-                Logger.Info($"Starting import: {shortName}");
+                _logger.Info($"Starting import: {shortName}");
 
                 foreach (string line in dataLines)
                 {
@@ -74,7 +76,7 @@ namespace BudgetBuddy.Infrastructure.Import
                     if (!result.IsSuccess)
                     {
                         malformed++;
-                        Logger.ImportReport($"[{shortName}] line {processed} malformed: {result.Error}");
+                        _logger.Report($"[{shortName}] line {processed} malformed: {result.Error}");
                         continue;
                     }
 
@@ -97,22 +99,22 @@ namespace BudgetBuddy.Infrastructure.Import
                 }
 
                 Console.WriteLine(); // new line after progress
-                Logger.Info($"[{shortName}] Imported: {imported}, Duplicates: {duplicates}, Malformed: {malformed}");
-                Logger.ImportReport($"{shortName} → Imported: {imported}, Duplicates: {duplicates}, Malformed: {malformed}");
+                _logger.Info($"[{shortName}] Imported: {imported}, Duplicates: {duplicates}, Malformed: {malformed}");
+                _logger.Report($"{shortName} → Imported: {imported}, Duplicates: {duplicates}, Malformed: {malformed}");
                 return (imported, duplicates, malformed);
             }
             catch (OperationCanceledException)
             {
                 Console.WriteLine();
-                Logger.Warn($"[{fileName}] Import cancelled by user.");
-                Logger.ImportReport($"{fileName} → CANCELLED by user.");
+                _logger.Warn($"[{fileName}] Import cancelled by user.");
+                _logger.Report($"{fileName} → CANCELLED by user.");
                 return (0, 0, 0);
             }
             catch (Exception e)
             {
                 Console.WriteLine();
-                Logger.Error($"[{fileName}] Error: {e.Message}");
-                Logger.ImportReport($"{fileName} → ERROR: {e.Message}");
+                _logger.Error($"[{fileName}] Error: {e.Message}");
+                _logger.Report($"{fileName} → ERROR: {e.Message}");
                 return (0, 0, 0);
             }
         }

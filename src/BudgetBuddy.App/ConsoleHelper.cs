@@ -3,16 +3,19 @@ using BudgetBuddy.Domain;
 using BudgetBuddy.Infrastructure.Export;
 using BudgetBuddy.Infrastructure.Import;
 
-
 namespace BudgetBuddy.App
 {
     public class ConsoleHelper
     {
         private IRepository<Transaction, string> _repository;
+        private ILogger _logger;
+        private CSVImporter _importer;
 
-        public ConsoleHelper(IRepository<Transaction, string> repository)
+        public ConsoleHelper(IRepository<Transaction, string> repository, ILogger logger, CSVImporter importer)
         {
             _repository = repository;
+            _logger = logger;
+            _importer = importer;
         }
         public  void PrintAllOptions()
         {
@@ -86,7 +89,7 @@ namespace BudgetBuddy.App
             return false;
         }
 
-        public  async Task Import(string[]? argText, CSVImporter importer)
+        public  async Task Import(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Import))
                 return;
@@ -104,11 +107,11 @@ namespace BudgetBuddy.App
             try
             {
                
-                await importer.ReadAllFilesAsync(argText!, cts.Token);
+                await _importer.ReadAllFilesAsync(argText!, cts.Token);
             }
             catch (OperationCanceledException)
             {
-                Logger.Info(Info.CancellingMessage);
+                _logger.Info(Info.CancellingMessage);
             }
             finally
             {
@@ -136,7 +139,7 @@ namespace BudgetBuddy.App
             }
             else
             {
-                Logger.Warn(Warnings.InvalidMonth);
+                _logger.Warn(Warnings.InvalidMonth);
             }
 
         }
@@ -150,13 +153,13 @@ namespace BudgetBuddy.App
 
             if (!decimal.TryParse(argText?[0], out decimal amount))
             {
-                Logger.Warn(Warnings.InvalidAmount);
+                _logger.Warn(Warnings.InvalidAmount);
                 return;
             }
 
             if (amount <= 0)
             {
-                Logger.Warn(Warnings.InvalidAmount);
+                _logger.Warn(Warnings.InvalidAmount);
                 return;
             }
 
@@ -197,34 +200,34 @@ namespace BudgetBuddy.App
             var id = argText![0];
             if (!_repository.Contains(id!))
             {
-                Logger.Error(Codes.NotFound);
+                _logger.Error(Codes.NotFound);
                 return;
             }
             var newCategoryName = argText![1];
 
             if (newCategoryName == null)
             {
-                Logger.Warn(Warnings.NullNewCategory);
+                _logger.Warn(Warnings.NullNewCategory);
                 return;
             }
 
             if (!_repository.TryGet(id!, out Transaction? transaction))
             {
-                Logger.Warn(Warnings.TransactionNotFound);
+                _logger.Warn(Warnings.TransactionNotFound);
                 return;
             }
             else
             {
                 if (transaction == null)
                 {
-                    Logger.Warn(Warnings.TransactionNotFound);
+                    _logger.Warn(Warnings.TransactionNotFound);
                     return;
                 }
                 else
                 {
                     transaction.Category = newCategoryName;
-                    Logger.GreenInfo(Codes.Success);
-                    Logger.GreenInfo("Transaction category changed to: " + newCategoryName);
+                    _logger.Success(Codes.Success);
+                    _logger.Success("Transaction category changed to: " + newCategoryName);
                     PrintTransactions(transaction);
                 }
             }
@@ -242,7 +245,7 @@ namespace BudgetBuddy.App
 
             if (!transactions.Any())
             {
-                Logger.Warn(Warnings.CategoryNotFound);
+                _logger.Warn(Warnings.CategoryNotFound);
                 return;
             }
 
@@ -250,7 +253,7 @@ namespace BudgetBuddy.App
             var transactionCount = transactions.Count();
             if (newCategoryName == null)
             {
-                Logger.Warn(Warnings.NullNewCategory);
+                _logger.Warn(Warnings.NullNewCategory);
                 return;
             }
 
@@ -259,7 +262,7 @@ namespace BudgetBuddy.App
                 t.Category = newCategoryName;
             }
 
-            Logger.GreenInfo($"Category name changed  from {oldCategoryName} to {newCategoryName} for {transactionCount} records.");
+            _logger.Success($"Category name changed  from {oldCategoryName} to {newCategoryName} for {transactionCount} records.");
             PrintTransactions(all.Where(t => string.Equals(t.Category, newCategoryName, StringComparison.OrdinalIgnoreCase)));
 
         }
@@ -272,18 +275,18 @@ namespace BudgetBuddy.App
             var id = argText![0];
             if (id == null)
             {
-                Logger.Warn(Warnings.NullId);
+                _logger.Warn(Warnings.NullId);
                 return;
             }
             if (!_repository.Contains(id))
             {
-                Logger.Error(Codes.NotFound);
+                _logger.Error(Codes.NotFound);
                 return;
             }
             else
             {
                 _repository.Remove(id);
-                Logger.GreenInfo(Codes.Success);
+                _logger.Success(Codes.Success);
             }
 
         }
@@ -296,13 +299,13 @@ namespace BudgetBuddy.App
             var year = argText![0];
             if (string.IsNullOrWhiteSpace(year))
             {
-                Logger.Warn(Warnings.NoYearGiven);
+                _logger.Warn(Warnings.NoYearGiven);
                 return;
             }
 
             if (!year.TryYear().IsSuccess)
             {
-                Logger.Warn(Warnings.InvalidYear);
+                _logger.Warn(Warnings.InvalidYear);
                 return;
             }
 
@@ -319,13 +322,13 @@ namespace BudgetBuddy.App
             var month = argText![0];
             if (string.IsNullOrWhiteSpace(month))
             {
-                Logger.Warn(Warnings.NoMonthGiven);
+                _logger.Warn(Warnings.NoMonthGiven);
                 return;
             }
 
             if (!month.TryMonth().IsSuccess)
             {
-                Logger.Warn(Warnings.InvalidDate);
+                _logger.Warn(Warnings.InvalidDate);
                 return;
             }
             GetMonthlyStats(month);
@@ -337,10 +340,10 @@ namespace BudgetBuddy.App
             decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month);
             IEnumerable<(string, decimal)> topCategories = GetTopExpenseCategoriesForMonth(month, 3);
 
-            Logger.Info($"For the month {month}");
-            Logger.Info($"Income: {income}, Expense: {expense}, Net: {net}");
-            Logger.Info($"Average size of a transaction was: {averageTransactionSize}");
-            Logger.Info(topCategories.ToPrettyTable("USD"));
+            _logger.Info($"For the month {month}");
+            _logger.Info($"Income: {income}, Expense: {expense}, Net: {net}");
+            _logger.Info($"Average size of a transaction was: {averageTransactionSize}");
+            _logger.Info(topCategories.ToPrettyTable("USD"));
         }
         public async Task Export(string[]? argText)
         {
@@ -351,7 +354,7 @@ namespace BudgetBuddy.App
 
             if (_repository.Count() == 0)
             {
-                Logger.Info("No data found to export.");
+                _logger.Info("No data found to export.");
                 return;
             }
 
@@ -369,7 +372,7 @@ namespace BudgetBuddy.App
             }
             else
             {
-                Logger.Warn("The strategy is not implemented yet. Choose between json or csv.");
+                _logger.Warn("The strategy is not implemented yet. Choose between json or csv.");
                 return;
             }
 
@@ -378,7 +381,7 @@ namespace BudgetBuddy.App
             ConsoleCancelEventHandler? handler = (s, e) =>
             {
                 e.Cancel = true;
-                Logger.Warn("Cancelling export.");
+                _logger.Warn("Cancelling export.");
                 cts.Cancel();
 
             };
@@ -395,16 +398,16 @@ namespace BudgetBuddy.App
                 {
                     if (!overwrite)
                         return;
-                    Logger.Info($"Successfully exported data to file {fileName}, in format {argText[0]}.");
+                    _logger.Info($"Successfully exported data to file {fileName}, in format {argText[0]}.");
                 }
                 else
                 {
-                    Logger.Error("Export failed.");
+                    _logger.Error("Export failed.");
                 }
             }
             catch (OperationCanceledException)
             {
-                Logger.Info("Export cancelled by user.");
+                _logger.Info("Export cancelled by user.");
             }
             finally
             {
@@ -415,7 +418,7 @@ namespace BudgetBuddy.App
         {
             if (!transactions.Any())
             {
-                Logger.Info(Info.NoTransactionsFound);
+                _logger.Info(Info.NoTransactionsFound);
                 return;
             }
 
@@ -428,7 +431,7 @@ namespace BudgetBuddy.App
         {
             if (transaction == null)
             {
-                Logger.Info(Info.NoTransactionsFound);
+                _logger.Info(Info.NoTransactionsFound);
                 return;
             }
 
@@ -488,17 +491,17 @@ namespace BudgetBuddy.App
 
         }
 
-        private static bool HasArgs(string[]? args, int min, string usage)
+        private  bool HasArgs(string[]? args, int min, string usage)
         {
             if (args is null || args.Length < min)
             {
-                Logger.Warn($"Improper usage. Try: {usage}.");
+                _logger.Warn($"Improper usage. Try: {usage}.");
                 return false;
             }
 
             if (args.Take(min).Any(a => string.IsNullOrWhiteSpace(a)))
             {
-                Logger.Warn($"Improper usage. Try: {usage}.");
+                _logger.Warn($"Improper usage. Try: {usage}.");
                 return false;
             }
 
