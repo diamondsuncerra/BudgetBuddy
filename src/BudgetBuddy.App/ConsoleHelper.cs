@@ -1,7 +1,6 @@
 using BudgetBuddy.Domain.Extensions;
 using BudgetBuddy.Domain;
-using BudgetBuddy.Infrastructure.Export;
-using BudgetBuddy.Infrastructure.Import;
+using BudgetBuddy.App.Abstractions;
 
 namespace BudgetBuddy.App
 {
@@ -9,15 +8,15 @@ namespace BudgetBuddy.App
     {
         private IRepository<Transaction, string> _repository;
         private ILogger _logger;
-        private CSVImporter _importer;
+        private IImporter _importer;
 
-        public ConsoleHelper(IRepository<Transaction, string> repository, ILogger logger, CSVImporter importer)
+        public ConsoleHelper(IRepository<Transaction, string> repository, ILogger logger, IImporter importer)
         {
             _repository = repository;
             _logger = logger;
             _importer = importer;
         }
-        public  void PrintAllOptions()
+        public void PrintAllOptions()
         {
             Console.WriteLine(ProperUsage.Import);
             Console.WriteLine(ProperUsage.List);
@@ -33,7 +32,7 @@ namespace BudgetBuddy.App
             Console.WriteLine(ProperUsage.Exit);
         }
 
-        public  bool GetCommand(out ConsoleCommands command, out string[] args)
+        public bool GetCommand(out ConsoleCommands command, out string[] args)
         {
             command = default;
             args = Array.Empty<string>();
