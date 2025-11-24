@@ -28,3 +28,4 @@
 [2025-11-19 18:10:29] [april.csv] line 20 malformed: Invalid Timestamp '2025-04-320'. Expected format yyyy-MM-dd.
 [2025-11-19 18:10:29] april.csv → Imported: 17, Duplicates: 0, Malformed: 3
 [2025-11-19 18:10:29] march.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-20 10:46:04] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
