@@ -79,7 +79,7 @@ namespace BudgetBuddy.App
             return false;
         }
 
-        public static async Task Import(string[]? argText, IRepository<Transaction, string> repo)
+        public static async Task Import(string[]? argText, IRepository<Transaction, string> repo, CSVImporter importer)
         {
             if (!HasArgs(argText, 1, ProperUsage.Import))
                 return;
@@ -96,7 +96,7 @@ namespace BudgetBuddy.App
 
             try
             {
-                var importer = new CSVImporter(repo);
+               
                 await importer.ReadAllFilesAsync(argText!, cts.Token);
             }
             catch (OperationCanceledException)

@@ -29,7 +29,7 @@ public class Program
             switch (command)
             {
                 case ConsoleCommands.Import:
-                    await ConsoleHelper.Import(argText, repo);
+                    await ConsoleHelper.Import(argText, repo, importer);
                     break;
 
                 case ConsoleCommands.ListAll:
