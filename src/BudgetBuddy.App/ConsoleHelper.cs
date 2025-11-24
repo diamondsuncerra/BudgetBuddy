@@ -1,6 +1,6 @@
 using BudgetBuddy.Domain.Extensions;
 using BudgetBuddy.Domain;
-using BudgetBuddy.App.Abstractions;
+using BudgetBuddy.Domain.Abstractions;
 
 namespace BudgetBuddy.App
 {
@@ -142,8 +142,6 @@ namespace BudgetBuddy.App
             }
 
         }
-
-
 
         public  void Over(string[]? argText)
         {

@@ -6,7 +6,7 @@ using BudgetBuddy.Domain;
 
 namespace BudgetBuddy.Infrastructure.Log
 {
-    public class ConsoleLogger : ILogger
+    public sealed class ConsoleLogger : ILogger
     {
         public void Info(string message)
         {

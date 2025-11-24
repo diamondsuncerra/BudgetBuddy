@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BudgetBuddy.Domain\BudgetBuddy.Domain.csproj" />
-    <ProjectReference Include="..\BudgetBuddy.App\BudgetBuddy.App.csproj" />
   </ItemGroup>
 
   <ItemGroup>

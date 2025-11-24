@@ -1,10 +1,10 @@
 ﻿namespace BudgetBuddy.App;
-
-using System.Data;
 using System.Threading.Tasks;
-using BudgetBuddy.App.Abstractions;
 using BudgetBuddy.Domain;
-
+using BudgetBuddy.Domain.Abstractions;
+using BudgetBuddy.Infrastructure;
+using BudgetBuddy.Infrastructure.Import;
+using BudgetBuddy.Infrastructure.Log;
 public class Program
 {
     public static async Task Main(string[] args)
@@ -12,7 +12,7 @@ public class Program
         IRepository<Transaction, string> repository = new TransactionsRepository();
         ILogger consoleLogger = new ConsoleLogger();
         ILogger fileLogger = new FileLogger();
-        IImporter importer = new(repository, fileLogger);
+        IImporter importer = new CsvImportAdapter(repository, fileLogger);
         ConsoleHelper handler = new ConsoleHelper(repository, consoleLogger, importer);
 
         Console.WriteLine(Info.Welcome);

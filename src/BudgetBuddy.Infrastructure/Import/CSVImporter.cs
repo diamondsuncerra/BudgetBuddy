@@ -9,13 +9,13 @@ using BudgetBuddy.Domain;
 
 namespace BudgetBuddy.Infrastructure.Import
 {
-    public class CSVImporter
+    public class CsvImporter
     {
         private readonly IRepository<Transaction, string> _repo;
         private readonly ILogger _logger;
         private readonly object lockObj = new();
 
-        public CSVImporter(IRepository<Transaction, string> repository, ILogger logger)
+        public CsvImporter(IRepository<Transaction, string> repository, ILogger logger)
         {
             _repo = repository;
             _logger = logger;
