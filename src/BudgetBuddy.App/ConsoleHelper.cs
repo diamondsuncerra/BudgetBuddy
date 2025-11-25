@@ -9,12 +9,14 @@ namespace BudgetBuddy.App
         private IRepository<Transaction, string> _repository;
         private ILogger _logger;
         private IImporter _importer;
+        private IExportService _exportService;
 
-        public ConsoleHelper(IRepository<Transaction, string> repository, ILogger logger, IImporter importer)
+        public ConsoleHelper(IRepository<Transaction, string> repository, ILogger logger, IImporter importer, IExportService exportService)
         {
             _repository = repository;
             _logger = logger;
             _importer = importer;
+            _exportService = exportService;
         }
         public void PrintAllOptions()
         {
@@ -27,7 +29,7 @@ namespace BudgetBuddy.App
             Console.WriteLine(ProperUsage.SetCategory);
             Console.WriteLine(ProperUsage.Remove);
             Console.WriteLine(ProperUsage.Stats);
-            Console.WriteLine(ProperUsage.Export); 
+            Console.WriteLine(ProperUsage.Export);
             Console.WriteLine(ProperUsage.Help);
             Console.WriteLine(ProperUsage.Exit);
         }
@@ -88,7 +90,7 @@ namespace BudgetBuddy.App
             return false;
         }
 
-        public  async Task Import(string[]? argText)
+        public async Task Import(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Import))
                 return;
@@ -105,7 +107,7 @@ namespace BudgetBuddy.App
 
             try
             {
-               
+
                 await _importer.ReadAllFilesAsync(argText!, cts.Token);
             }
             catch (OperationCanceledException)
@@ -120,12 +122,12 @@ namespace BudgetBuddy.App
         }
 
 
-        public  void ListAll()
+        public void ListAll()
         {
             var all = _repository.GetAll();
             PrintTransactions(all);
         }
-        public  void ListMonth(string[]? argText)
+        public void ListMonth(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.List))
                 return;
@@ -143,7 +145,7 @@ namespace BudgetBuddy.App
 
         }
 
-        public  void Over(string[]? argText)
+        public void Over(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Over))
                 return;
@@ -165,7 +167,7 @@ namespace BudgetBuddy.App
             PrintTransactions(overAmountTransactions);
         }
 
-        public  void ByCategory(string[]? argText)
+        public void ByCategory(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.ByCategory))
                 return;
@@ -175,7 +177,7 @@ namespace BudgetBuddy.App
             PrintTransactions(byCategoryTransactions);
         }
 
-        public  void Search(string[]? argText)
+        public void Search(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Search))
                 return;
@@ -189,7 +191,7 @@ namespace BudgetBuddy.App
             PrintTransactions(hits);
         }
 
-        public  void SetCategory(string[]? argText)
+        public void SetCategory(string[]? argText)
         {
             if (!HasArgs(argText, 2, ProperUsage.SetCategory))
                 return;
@@ -231,7 +233,7 @@ namespace BudgetBuddy.App
 
         }
 
-        public  void RenameCategory(string[]? argText)
+        public void RenameCategory(string[]? argText)
         {
             if (!HasArgs(argText, 2, ProperUsage.RenameCategory))
                 return;
@@ -264,7 +266,7 @@ namespace BudgetBuddy.App
 
         }
 
-        public  void Remove(string[]? argText)
+        public void Remove(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Remove))
                 return;
@@ -288,7 +290,7 @@ namespace BudgetBuddy.App
 
         }
 
-        public  void StatsYearly(string[]? argText)
+        public void StatsYearly(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Stats))
                 return;
@@ -312,7 +314,7 @@ namespace BudgetBuddy.App
                 GetMonthlyStats(month);
             }
         }
-        public  void StatsMonth(string[]? argText)
+        public void StatsMonth(string[]? argText)
         {
             if (!HasArgs(argText, 1, ProperUsage.Stats))
                 return;
@@ -331,7 +333,7 @@ namespace BudgetBuddy.App
             GetMonthlyStats(month);
         }
 
-        private  void GetMonthlyStats(string month)
+        private void GetMonthlyStats(string month)
         {
             (decimal income, decimal expense, decimal net) = GetIncomeExpenseNetForMonth(month);
             decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month);
@@ -354,25 +356,14 @@ namespace BudgetBuddy.App
                 _logger.Info("No data found to export.");
                 return;
             }
-
-            IExportStrategy strategy;
             string fileName = argText![1];
 
-            if (argText[0].Equals("json", StringComparison.OrdinalIgnoreCase))
+            if(!IsValidExportFormat(argText[0]))
             {
-                strategy = new JsonExportStrategy();
-            }
-            else
-            if (argText[0].Equals("csv", StringComparison.OrdinalIgnoreCase))
-            {
-                strategy = new CsvExportStrategy();
-            }
-            else
-            {
-                _logger.Warn("The strategy is not implemented yet. Choose between json or csv.");
+                _logger.Warn(Warnings.InvalidExportFormat);
                 return;
             }
-
+            var format = argText[0];
             using var cts = new CancellationTokenSource();
 
             ConsoleCancelEventHandler? handler = (s, e) =>
@@ -387,14 +378,12 @@ namespace BudgetBuddy.App
 
             try
             {
-                Exporter exporter = new(strategy);
                 bool overwrite = ConfirmOverwrite(fileName);
-                bool result = await exporter.Run(fileName, _repository.GetAll(), cts.Token, overwrite);
-
+                bool result = await _exportService.Export(fileName, format, _repository.GetAll(), cts.Token, overwrite);
                 if (result)
                 {
                     if (!overwrite)
-                        return;
+                        return; // not sure
                     _logger.Info($"Successfully exported data to file {fileName}, in format {argText[0]}.");
                 }
                 else
@@ -411,7 +400,7 @@ namespace BudgetBuddy.App
                 Console.CancelKeyPress -= handler;
             }
         }
-        public  void PrintTransactions(IEnumerable<Transaction> transactions)
+        public void PrintTransactions(IEnumerable<Transaction> transactions)
         {
             if (!transactions.Any())
             {
@@ -424,7 +413,7 @@ namespace BudgetBuddy.App
                 Console.WriteLine(t);
             }
         }
-        private  void PrintTransactions(Transaction transaction)
+        private void PrintTransactions(Transaction transaction)
         {
             if (transaction == null)
             {
@@ -436,7 +425,7 @@ namespace BudgetBuddy.App
 
         }
 
-        public  bool ConfirmOverwrite(string fileName)
+        public bool ConfirmOverwrite(string fileName)
         {
             if (!File.Exists(fileName))
                 return true;
@@ -453,7 +442,7 @@ namespace BudgetBuddy.App
         }
 
 
-        public  (decimal, decimal, decimal) GetIncomeExpenseNetForMonth(string month)
+        public (decimal, decimal, decimal) GetIncomeExpenseNetForMonth(string month)
         {
             decimal income = 0m, expense = 0m;
             var all = _repository.GetAll();
@@ -476,7 +465,7 @@ namespace BudgetBuddy.App
             return monthly.Any() ? monthly.AverageAbs() : 0m;
         }
 
-        public  IEnumerable<(string Category, decimal Total)> GetTopExpenseCategoriesForMonth(string month, int top)
+        public IEnumerable<(string Category, decimal Total)> GetTopExpenseCategoriesForMonth(string month, int top)
         {
             var all = _repository.GetAll();
             var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
@@ -488,7 +477,7 @@ namespace BudgetBuddy.App
 
         }
 
-        private  bool HasArgs(string[]? args, int min, string usage)
+        private bool HasArgs(string[]? args, int min, string usage)
         {
             if (args is null || args.Length < min)
             {
@@ -503,6 +492,11 @@ namespace BudgetBuddy.App
             }
 
             return true;
+        }
+
+        private bool IsValidExportFormat(string format)
+        {
+            return Enum.TryParse(typeof(ExportFormat), format, true, out _); // _ -> pt ca nu folosesc!! <3 <3
         }
 
     }
