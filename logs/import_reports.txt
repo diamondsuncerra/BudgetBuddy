@@ -69,3 +69,6 @@
 [2025-11-26 11:53:16] [INFO] Starting import: jan.csv
 [2025-11-26 11:53:17] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
 [2025-11-26 11:53:17] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:54:55] [INFO] Starting import: jan.csv
+[2025-11-26 11:54:56] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:54:56] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0

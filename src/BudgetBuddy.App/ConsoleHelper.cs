@@ -8,10 +8,10 @@ namespace BudgetBuddy.App
     {
         private IRepository<Transaction, string> _repository;
         private ILogger _logger;
-        private IImporter _importer;
+        private IImportService _importer;
         private IExportService _exportService;
 
-        public ConsoleHelper(IRepository<Transaction, string> repository, ILogger logger, IImporter importer, IExportService exportService)
+        public ConsoleHelper(IRepository<Transaction, string> repository, ILogger logger, IImportService importer, IExportService exportService)
         {
             _repository = repository;
             _logger = logger;
@@ -240,7 +240,7 @@ namespace BudgetBuddy.App
 
             var all = _repository.GetAll();
             var oldCategoryName = argText![0];
-            var transactions = all.Where(t => string.Equals(t.Category, oldCategoryName, StringComparison.OrdinalIgnoreCase));
+            var transactions = all.Where(t => string.Equals(t.Category, oldCategoryName));
 
             if (!transactions.Any())
             {
@@ -399,15 +399,12 @@ namespace BudgetBuddy.App
             {
                 bool overwrite = ConfirmOverwrite(fileName);
                 bool result = await _exportService.Export(fileName, format, _repository.GetAll(), cts.Token, overwrite);
+                // nu e ok overwrite ca e flag nu e CLEAN CODE! 
                 if (result)
                 {
                     if (!overwrite)
                         return; // not sure
                     _logger.Info($"Successfully exported data to file {fileName}, in format {argText[0]}.");
-                }
-                else
-                {
-                    _logger.Error("Export failed.");
                 }
             }
             catch (OperationCanceledException)

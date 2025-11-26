@@ -1,3 +1,4 @@
+using BudgetBuddy.App;
 using BudgetBuddy.Domain;
 using BudgetBuddy.Domain.Abstractions;
 
@@ -5,22 +6,23 @@ namespace BudgetBuddy.Infrastructure.Export
 {
     public class ExportService : IExportService
     { // this decices the strategy
+
+        ILogger _logger;
+        public ExportService(ILogger logger)
+        {
+            _logger = logger;
+        }
         public async Task<bool> Export(string fileName, string format, IEnumerable<Transaction> data, CancellationToken token, bool overwrite)
         {
-            IExportStrategy strategy;
-            if(format.ToLowerInvariant().Equals("csv"))
+            IExportStrategy strategy = format.ToLowerInvariant() switch
             {
-                strategy = new CsvExportStrategy();
-            } else 
-            { // n-ar trb sa ajunga pana aici altcv inafara de csv si json
-                strategy = new JsonExportStrategy (); 
-            } 
+                "csv" => new CsvExportStrategy(_logger),
+                "json" => new JsonExportStrategy(_logger),
+                _ => throw new NotSupportedException(Warnings.InvalidExportFormat)
+            };
 
-            var exporter = new Exporter(strategy);
-            return await exporter.Run(fileName, data, token, overwrite);
-            // sau as putea direct strategy.Export()
-            // cum e mai bine ??
-            // ps m-am complicat asa sa fie SOLID!
+            return await strategy.Export(fileName, data, token, overwrite);
+            // for solid
         }
     }
 }
