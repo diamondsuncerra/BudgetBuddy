@@ -1,80 +1,84 @@
 ﻿namespace BudgetBuddy.App;
-
-using System.Data;
 using System.Threading.Tasks;
 using BudgetBuddy.Domain;
+using BudgetBuddy.Domain.Abstractions;
 using BudgetBuddy.Infrastructure;
+using BudgetBuddy.Infrastructure.Export;
 using BudgetBuddy.Infrastructure.Import;
-
+using BudgetBuddy.Infrastructure.Log;
 public class Program
 {
     public static async Task Main(string[] args)
     {
-        Console.WriteLine(Info.Welcome);
-        ConsoleHelper.PrintAllOptions();
-        IRepository<Transaction, string> repo = new TransactionsRepository();
-        CSVImporter importer = new(repo);
+        IRepository<Transaction, string> repository = new TransactionsRepository();
+        ILogger consoleLogger = new ConsoleLogger();
+        ILogger fileLogger = new FileLogger();
+        IImporter importer = new CsvImportAdapter(repository, fileLogger);
+        IExportService exportService = new ExportService();
+        ConsoleHelper handler = new ConsoleHelper(repository, consoleLogger, importer, exportService);
 
+        Console.WriteLine(Info.Welcome);
+        handler.PrintAllOptions();
 
         bool looping = true;
         while (looping)
         {
 
-            if (!ConsoleHelper.GetCommand(out ConsoleCommands command, out string[] argText))
+            if (!handler.GetCommand(out ConsoleCommands command, out string[] argText))
             {
-                Logger.Warn(Warnings.InvalidCommand);
+                consoleLogger.Warn(Warnings.InvalidCommand);
                 continue;
             }
 
             switch (command)
             {
                 case ConsoleCommands.Import:
-                    await ConsoleHelper.Import(argText, repo);
+                    await handler.Import(argText);
                     break;
 
                 case ConsoleCommands.ListAll:
-                    ConsoleHelper.ListAll(repo);
+                    handler.ListAll();
                     break;
                 case ConsoleCommands.ListMonth:
-                    ConsoleHelper.ListMonth(argText, repo);
+                    handler.ListMonth(argText);
                     break;
                 case ConsoleCommands.ByCategory:
-                    ConsoleHelper.ByCategory(argText, repo);
+                    handler.ByCategory(argText);
                     break;
 
                 case ConsoleCommands.Over:
-                    ConsoleHelper.Over(argText, repo);
+                    handler.Over(argText);
                     break;
 
                 case ConsoleCommands.Search:
-                    ConsoleHelper.Search(argText, repo);
+                    handler.Search(argText);
                     break;
 
                 case ConsoleCommands.SetCategory:
-                    ConsoleHelper.SetCategory(argText, repo);
+                    handler.SetCategory(argText);
                     break;
 
                 case ConsoleCommands.RenameCategory:
-                    ConsoleHelper.RenameCategory(argText, repo);
+                    handler.RenameCategory(argText);
                     break;
 
                 case ConsoleCommands.Remove:
-                    ConsoleHelper.Remove(argText, repo);
+                    handler.Remove(argText);
                     break;
 
                 case ConsoleCommands.StatsMonth:
-                    ConsoleHelper.StatsMonth(argText, repo);
+                    handler.StatsMonth(argText);
                     break;
                 case ConsoleCommands.StatsYearly:
-                    ConsoleHelper.StatsYearly(argText, repo);
+                    handler.StatsYearly(argText);
                     break;
 
                 case ConsoleCommands.Export:
-                    await ConsoleHelper.Export(argText, repo);
+                    await handler.Export(argText);
                     break;
 
                 case ConsoleCommands.Help:
-                    ConsoleHelper.PrintAllOptions();
+                    handler.PrintAllOptions();
                     break;
 
                 case ConsoleCommands.Exit:
@@ -83,7 +87,7 @@ public class Program
                     break;
 
                 default:
-                    Logger.Warn(Warnings.CommandNotImplemented);
+                    consoleLogger.Warn(Warnings.CommandNotImplemented);
                     break;
             }
 

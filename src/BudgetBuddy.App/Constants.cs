@@ -22,6 +22,7 @@ namespace BudgetBuddy.App
     public class Warnings
     {
         public const string InvalidCommand = "Invalid command.";
+        public const string InvalidExportFormat = "Invalid export format.";
         public const string CommandNotImplemented = "Command not implemented yet.";
         public const string ImproperUsage = "Improver usage of ";
         public const string InvalidMonth = "Invalid month";
@@ -74,4 +75,6 @@ namespace BudgetBuddy.App
     {
         Id, Timestamp, Payee, Amount, Currency, Category
     }
+
+  
 }

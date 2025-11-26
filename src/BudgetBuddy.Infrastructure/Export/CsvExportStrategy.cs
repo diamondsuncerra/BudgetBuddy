@@ -18,19 +18,19 @@ namespace BudgetBuddy.Infrastructure.Export
             {
                 if (string.IsNullOrWhiteSpace(fileName))
                 {
-                    Logger.Warn("Export failed: File Name is empty.");
+                   // Logger.Warn("Export failed: File Name is empty.");
                     return false;
                 }
 
                 if (!overwrite && File.Exists(fileName))
                 {
-                    Logger.Warn("Export failed: Overwriting not permitted but file exists.");
+                    //Logger.Warn("Export failed: Overwriting not permitted but file exists.");
                     return false;
                 }
 
                 foreach (var t in data)
                 {
-                    Logger.Info($"Preparing record {t.Id}...");
+                  //  Logger.Info($"Preparing record {t.Id}...");
                     await Task.Delay(100, token); // 100ms delay per record
                 }
 
@@ -64,12 +64,12 @@ namespace BudgetBuddy.Infrastructure.Export
             }
             catch (OperationCanceledException)
             {
-                Logger.Info("CSV export cancelled.");
+               // Logger.Info("CSV export cancelled.");
                 return false;
             }
             catch (Exception ex)
             {
-                Logger.Warn($"Export failed: {ex.Message}");
+                //Logger.Warn($"Export failed: {ex.Message}");
                 return false;
             }
 
