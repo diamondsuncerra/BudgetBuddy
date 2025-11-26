@@ -92,7 +92,7 @@ namespace BudgetBuddy.App
 
         public async Task Import(string[]? argText)
         {
-            if (!HasArgs(argText, 1, ProperUsage.Import))
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Import))
                 return;
 
             using var cts = new CancellationTokenSource();
@@ -129,7 +129,7 @@ namespace BudgetBuddy.App
         }
         public void ListMonth(string[]? argText)
         {
-            if (!HasArgs(argText, 1, ProperUsage.List))
+            if (!IsArgsCorrect(argText, 1, ProperUsage.List))
                 return;
 
             if (argText![0].TryMonth().IsSuccess)
@@ -147,7 +147,7 @@ namespace BudgetBuddy.App
 
         public void Over(string[]? argText)
         {
-            if (!HasArgs(argText, 1, ProperUsage.Over))
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Over))
                 return;
 
             if (!decimal.TryParse(argText?[0], out decimal amount))
@@ -169,7 +169,7 @@ namespace BudgetBuddy.App
 
         public void ByCategory(string[]? argText)
         {
-            if (!HasArgs(argText, 1, ProperUsage.ByCategory))
+            if (!IsArgsCorrect(argText, 1, ProperUsage.ByCategory))
                 return;
 
             var all = _repository.GetAll();
@@ -179,7 +179,7 @@ namespace BudgetBuddy.App
 
         public void Search(string[]? argText)
         {
-            if (!HasArgs(argText, 1, ProperUsage.Search))
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Search))
                 return;
 
             var all = _repository.GetAll();
@@ -193,7 +193,7 @@ namespace BudgetBuddy.App
 
         public void SetCategory(string[]? argText)
         {
-            if (!HasArgs(argText, 2, ProperUsage.SetCategory))
+            if (!IsArgsCorrect(argText, 2, ProperUsage.SetCategory))
                 return;
 
             var id = argText![0];
@@ -235,7 +235,7 @@ namespace BudgetBuddy.App
 
         public void RenameCategory(string[]? argText)
         {
-            if (!HasArgs(argText, 2, ProperUsage.RenameCategory))
+            if (!IsArgsCorrect(argText, 2, ProperUsage.RenameCategory))
                 return;
 
             var all = _repository.GetAll();
@@ -268,7 +268,7 @@ namespace BudgetBuddy.App
 
         public void Remove(string[]? argText)
         {
-            if (!HasArgs(argText, 1, ProperUsage.Remove))
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Remove))
                 return;
 
             var id = argText![0];
@@ -292,7 +292,7 @@ namespace BudgetBuddy.App
 
         public void StatsYearly(string[]? argText)
         {
-            if (!HasArgs(argText, 1, ProperUsage.Stats))
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Stats))
                 return;
 
             var year = argText![0];
@@ -308,15 +308,28 @@ namespace BudgetBuddy.App
                 return;
             }
 
+            if (!IsYearInTheSystem(year))
+            {
+                _logger.Warn(Warnings.YearNotFound);
+                return;
+            }
+
             for (int i = 1; i <= 12; i++)
             {
                 var month = year.ToMonthAndYear(i);
-                GetMonthlyStats(month);
+                if (!IsMonthInTheSystem(month))
+                {
+                    _logger.Info("No data for the month: " + month);
+                }
+                else
+                {
+                    GetMonthlyStats(month);
+                }
             }
         }
         public void StatsMonth(string[]? argText)
         {
-            if (!HasArgs(argText, 1, ProperUsage.Stats))
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Stats))
                 return;
             var month = argText![0];
             if (string.IsNullOrWhiteSpace(month))
@@ -328,6 +341,12 @@ namespace BudgetBuddy.App
             if (!month.TryMonth().IsSuccess)
             {
                 _logger.Warn(Warnings.InvalidDate);
+                return;
+            }
+
+            if (!IsMonthInTheSystem(month))
+            {
+                _logger.Warn(Warnings.MonthNotFound);
                 return;
             }
             GetMonthlyStats(month);
@@ -347,7 +366,7 @@ namespace BudgetBuddy.App
         public async Task Export(string[]? argText)
         {
 
-            if (!HasArgs(argText, 2, ProperUsage.Export))
+            if (!IsArgsCorrect(argText, 2, ProperUsage.Export))
                 return;
 
 
@@ -358,7 +377,7 @@ namespace BudgetBuddy.App
             }
             string fileName = argText![1];
 
-            if(!IsValidExportFormat(argText[0]))
+            if (!IsValidExportFormat(argText[0]))
             {
                 _logger.Warn(Warnings.InvalidExportFormat);
                 return;
@@ -477,15 +496,15 @@ namespace BudgetBuddy.App
 
         }
 
-        private bool HasArgs(string[]? args, int min, string usage)
+        private bool IsArgsCorrect(string[]? args, int correctLength, string usage)
         {
-            if (args is null || args.Length < min)
+            if (args is null || args.Length != correctLength)
             {
                 _logger.Warn($"Improper usage. Try: {usage}.");
                 return false;
             }
 
-            if (args.Take(min).Any(a => string.IsNullOrWhiteSpace(a)))
+            if (args.Take(correctLength).Any(a => string.IsNullOrWhiteSpace(a)))
             {
                 _logger.Warn($"Improper usage. Try: {usage}.");
                 return false;
@@ -498,6 +517,16 @@ namespace BudgetBuddy.App
         {
             return Enum.TryParse(typeof(ExportFormat), format, true, out _); // _ -> pt ca nu folosesc!! <3 <3
         }
+        private bool IsYearInTheSystem(string year)
+        {
+            var transactions = _repository.GetAll();
+            return transactions.Where(t => t.Timestamp.YearKey().Equals(year)).Any();
+        }
 
+        private bool IsMonthInTheSystem(string month)
+        {
+            var transactions = _repository.GetAll();
+            return transactions.Where(t => t.Timestamp.MonthKey().Equals(month)).Any();
+        }
     }
 }

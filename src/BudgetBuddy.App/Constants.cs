@@ -36,6 +36,8 @@ namespace BudgetBuddy.App
         public const string NullId = "Id must not be null.";
         public const string NoYearGiven = "No year given.";
         public const string FileNotFound = "File doesn't exist";
+        public const string YearNotFound = "The year is not registered in the system.";
+        public const string MonthNotFound = "The month is not registered in the system.";
         public const string NoMonthGiven = "No month given";
     }
 
