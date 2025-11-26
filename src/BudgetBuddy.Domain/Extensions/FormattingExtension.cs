@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using BudgetBuddy.App;
 namespace BudgetBuddy.Domain.Extensions;
 
 public static class FormattingExtensions
@@ -30,5 +31,9 @@ public static class FormattingExtensions
         return string.Format(CultureInfo.InvariantCulture, "{0:N2} {1}", value, currency);
     }
 
+    public static string ProperUsageFormat(this string usage)
+    {
+        return ProperUsage.ImproperUsageText + usage;
+    }
 
 }

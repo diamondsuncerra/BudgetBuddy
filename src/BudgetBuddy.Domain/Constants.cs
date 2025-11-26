@@ -62,6 +62,8 @@ namespace BudgetBuddy.App
         public const string ExitMessage = "Exiting application. Goodbye!";
         public const string CancellingMessage = "Cancelling... please wait.";
         public const string HeaderFormat = "Id,Timestamp,Payee,Amount,Currency,Category";
+        public const string OverWriteQuestionPrompt = "Do you want to overwrite it? [y/N]: ";
+        public const string ExportCancelledByUser = "Export cancelled by user.";
     }
     public class ProperUsage
     {
@@ -79,6 +81,7 @@ namespace BudgetBuddy.App
 
         public const string Help = "help";
         public const string Exit = "exit";
+        public const string ImproperUsageText = "Improper usage. Try: ";
 
     }
     public class Files

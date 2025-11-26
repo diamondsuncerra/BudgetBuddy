@@ -409,7 +409,7 @@ namespace BudgetBuddy.App
             }
             catch (OperationCanceledException)
             {
-                _logger.Info("Export cancelled by user.");
+                _logger.Info(Info.ExportCancelledByUser);
             }
             finally
             {
@@ -447,7 +447,7 @@ namespace BudgetBuddy.App
                 return true;
 
             Console.WriteLine($"File {fileName} already exists.");
-            Console.Write("Do you want to overwrite it? [y/N]: ");
+            Console.Write(Info.OverWriteQuestionPrompt);
             var response = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(response))
@@ -497,13 +497,13 @@ namespace BudgetBuddy.App
         {
             if (args is null || args.Length != correctLength)
             {
-                _logger.Warn($"Improper usage. Try: {usage}.");
+                _logger.Warn(usage.ProperUsageFormat());
                 return false;
             }
 
             if (args.Take(correctLength).Any(a => string.IsNullOrWhiteSpace(a)))
             {
-                _logger.Warn($"Improper usage. Try: {usage}.");
+                _logger.Warn(usage.ProperUsageFormat());
                 return false;
             }
 
