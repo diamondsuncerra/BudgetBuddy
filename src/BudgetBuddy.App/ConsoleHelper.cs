@@ -494,7 +494,7 @@ namespace BudgetBuddy.App
             return true;
         }
 
-        private bool IsValidExportFormat(string format)
+        private static bool IsValidExportFormat(string format)
         {
             return Enum.TryParse(typeof(ExportFormat), format, true, out _); // _ -> pt ca nu folosesc!! <3 <3
         }

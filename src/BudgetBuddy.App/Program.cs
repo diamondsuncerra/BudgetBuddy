@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using BudgetBuddy.Domain;
 using BudgetBuddy.Domain.Abstractions;
 using BudgetBuddy.Infrastructure;
+using BudgetBuddy.Infrastructure.Export;
 using BudgetBuddy.Infrastructure.Import;
 using BudgetBuddy.Infrastructure.Log;
 public class Program
@@ -13,7 +14,8 @@ public class Program
         ILogger consoleLogger = new ConsoleLogger();
         ILogger fileLogger = new FileLogger();
         IImporter importer = new CsvImportAdapter(repository, fileLogger);
-        ConsoleHelper handler = new ConsoleHelper(repository, consoleLogger, importer);
+        IExportService exportService = new ExportService();
+        ConsoleHelper handler = new ConsoleHelper(repository, consoleLogger, importer, exportService);
 
         Console.WriteLine(Info.Welcome);
         handler.PrintAllOptions();

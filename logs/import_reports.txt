@@ -29,3 +29,19 @@
 [2025-11-19 18:10:29] april.csv → Imported: 17, Duplicates: 0, Malformed: 3
 [2025-11-19 18:10:29] march.csv → Imported: 20, Duplicates: 0, Malformed: 0
 [2025-11-20 10:46:04] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:04:29] [INFO] Starting import: jan.csv
+[2025-11-26 11:04:31] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:04:31] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:05:42] [WARN] [feb.csv] File doesn't exist
+[2025-11-26 11:05:42] [WARN] [march.csv] File doesn't exist
+[2025-11-26 11:05:42] [INFO] Total Imported: 0, Total Duplicates: 0, Total Malformed: 0
+[2025-11-26 11:05:52] [WARN] [feb.csv] File doesn't exist
+[2025-11-26 11:05:52] [WARN] [march.csv] File doesn't exist
+[2025-11-26 11:05:52] [INFO] Total Imported: 0, Total Duplicates: 0, Total Malformed: 0
+[2025-11-26 11:06:00] [INFO] Starting import: feb.csv
+[2025-11-26 11:06:00] [INFO] Starting import: march.csv
+[2025-11-26 11:06:01] [INFO] [feb.csv] Imported: 19, Duplicates: 1, Malformed: 0
+[2025-11-26 11:06:01] [INFO] [march.csv] Imported: 6, Duplicates: 14, Malformed: 0
+[2025-11-26 11:06:01] feb.csv → Imported: 19, Duplicates: 1, Malformed: 0
+[2025-11-26 11:06:01] march.csv → Imported: 6, Duplicates: 14, Malformed: 0
+[2025-11-26 11:06:01] [INFO] Total Imported: 25, Total Duplicates: 15, Total Malformed: 0
