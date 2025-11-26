@@ -45,3 +45,30 @@
 [2025-11-26 11:06:01] feb.csv → Imported: 19, Duplicates: 1, Malformed: 0
 [2025-11-26 11:06:01] march.csv → Imported: 6, Duplicates: 14, Malformed: 0
 [2025-11-26 11:06:01] [INFO] Total Imported: 25, Total Duplicates: 15, Total Malformed: 0
+[2025-11-26 11:44:02] [INFO] Starting import: jan.csv
+[2025-11-26 11:44:03] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:44:03] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:45:51] [INFO] Starting import: jan.csv
+[2025-11-26 11:45:53] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:45:53] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:47:41] [INFO] Starting import: jan.csv
+[2025-11-26 11:47:43] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:47:43] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:50:02] [INFO] Starting import: jan.csv
+[2025-11-26 11:50:03] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:50:03] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:50:19] [INFO] Starting import: feb.csv
+[2025-11-26 11:50:20] [INFO] [feb.csv] Imported: 19, Duplicates: 1, Malformed: 0
+[2025-11-26 11:50:20] feb.csv → Imported: 19, Duplicates: 1, Malformed: 0
+[2025-11-26 11:50:26] [INFO] Starting import: feb.csv
+[2025-11-26 11:50:26] [WARN] [data\feb.csv] Import cancelled by user.
+[2025-11-26 11:50:26] data\feb.csv → CANCELLED by user.
+[2025-11-26 11:50:50] [INFO] Starting import: feb.csv
+[2025-11-26 11:50:51] [INFO] [feb.csv] Imported: 11, Duplicates: 9, Malformed: 0
+[2025-11-26 11:50:51] feb.csv → Imported: 11, Duplicates: 9, Malformed: 0
+[2025-11-26 11:53:16] [INFO] Starting import: jan.csv
+[2025-11-26 11:53:17] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:53:17] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:54:55] [INFO] Starting import: jan.csv
+[2025-11-26 11:54:56] [INFO] [jan.csv] Imported: 20, Duplicates: 0, Malformed: 0
+[2025-11-26 11:54:56] jan.csv → Imported: 20, Duplicates: 0, Malformed: 0

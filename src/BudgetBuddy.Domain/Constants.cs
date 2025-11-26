@@ -36,9 +36,19 @@ namespace BudgetBuddy.App
         public const string NullId = "Id must not be null.";
         public const string NoYearGiven = "No year given.";
         public const string FileNotFound = "File doesn't exist";
+        public const string YearNotFound = "The year is not registered in the system.";
+        public const string MonthNotFound = "The month is not registered in the system.";
         public const string NoMonthGiven = "No month given";
     }
 
+    public class ExportFailure
+    {
+        public const string FileNameEmpty = "Export failed: File Name is empty.";
+        public const string OverwritingNotPermitted = "Export failed: Overwriting not permitted but file exists.";
+        public const string JSONCancelled = "JSON export cancelled.";
+        public const string CSVCancelled = "CSV export cancelled.";
+
+    }
     public class Codes
     {
         public const string NotFound = "404 NOT FOUND.";
@@ -51,6 +61,7 @@ namespace BudgetBuddy.App
         public const string Welcome = "Welcome to Budget Buddy!\nPlease choose one of the following:";
         public const string ExitMessage = "Exiting application. Goodbye!";
         public const string CancellingMessage = "Cancelling... please wait.";
+        public const string HeaderFormat = "Id,Timestamp,Payee,Amount,Currency,Category";
     }
     public class ProperUsage
     {
@@ -70,11 +81,15 @@ namespace BudgetBuddy.App
         public const string Exit = "exit";
 
     }
+    public class Files
+    {
+        public const string ImportReportFile = "logs/import_reports.txt";
+    }
 
     public enum HeaderFormat
     {
         Id, Timestamp, Payee, Amount, Currency, Category
     }
 
-  
+
 }

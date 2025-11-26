@@ -11,11 +11,10 @@ public class Program
     public static async Task Main(string[] args)
     {
         IRepository<Transaction, string> repository = new TransactionsRepository();
-        ILogger consoleLogger = new ConsoleLogger();
-        ILogger fileLogger = new FileLogger();
-        IImporter importer = new CsvImportAdapter(repository, fileLogger);
-        IExportService exportService = new ExportService();
-        ConsoleHelper handler = new ConsoleHelper(repository, consoleLogger, importer, exportService);
+        ILogger logger = new ConsoleLogger();
+        IImportService importer = new ImportService(repository, logger);
+        IExportService exportService = new ExportService(logger);
+        ConsoleHelper handler = new ConsoleHelper(repository, logger, importer, exportService);
 
         Console.WriteLine(Info.Welcome);
         handler.PrintAllOptions();
@@ -26,7 +25,7 @@ public class Program
 
             if (!handler.GetCommand(out ConsoleCommands command, out string[] argText))
             {
-                consoleLogger.Warn(Warnings.InvalidCommand);
+                logger.Warn(Warnings.InvalidCommand);
                 continue;
             }
 
@@ -87,7 +86,7 @@ public class Program
                     break;
 
                 default:
-                    consoleLogger.Warn(Warnings.CommandNotImplemented);
+                    logger.Warn(Warnings.CommandNotImplemented);
                     break;
             }
 

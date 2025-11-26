@@ -7,5 +7,6 @@ namespace BudgetBuddy.Domain
         void Error(string message);
         void Success(string message);
         void Report(string message);
+        void Log(string message);
     }
 }

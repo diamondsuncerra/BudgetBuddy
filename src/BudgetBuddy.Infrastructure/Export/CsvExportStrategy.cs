@@ -4,13 +4,19 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BudgetBuddy.App;
 using BudgetBuddy.Domain;
 
 namespace BudgetBuddy.Infrastructure.Export
 {
     public class CsvExportStrategy : IExportStrategy
     {
+        private ILogger _logger;
 
+        public CsvExportStrategy(ILogger logger)
+        {
+            _logger = logger;
+        }
         public async Task<bool> Export(string fileName, IEnumerable<Transaction> data, CancellationToken token, bool overwrite)
         {
 
@@ -18,19 +24,19 @@ namespace BudgetBuddy.Infrastructure.Export
             {
                 if (string.IsNullOrWhiteSpace(fileName))
                 {
-                   // Logger.Warn("Export failed: File Name is empty.");
+                    _logger.Warn("Export failed: File Name is empty.");
                     return false;
                 }
 
                 if (!overwrite && File.Exists(fileName))
                 {
-                    //Logger.Warn("Export failed: Overwriting not permitted but file exists.");
+                    _logger.Warn("Export failed: Overwriting not permitted but file exists.");
                     return false;
                 }
 
                 foreach (var t in data)
                 {
-                  //  Logger.Info($"Preparing record {t.Id}...");
+                    _logger.Info($"Preparing record {t.Id}...");
                     await Task.Delay(100, token); // 100ms delay per record
                 }
 
@@ -43,7 +49,7 @@ namespace BudgetBuddy.Infrastructure.Export
 
                 await using var fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true);
                 await using var writer = new StreamWriter(fs, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
-                await writer.WriteLineAsync("Id,Timestamp,Payee,Amount,Currency,Category");
+                await writer.WriteLineAsync(Info.HeaderFormat);
 
                 foreach (var t in data)
                 {
@@ -64,12 +70,12 @@ namespace BudgetBuddy.Infrastructure.Export
             }
             catch (OperationCanceledException)
             {
-               // Logger.Info("CSV export cancelled.");
+                _logger.Info(ExportFailure.CSVCancelled);
                 return false;
             }
             catch (Exception ex)
             {
-                //Logger.Warn($"Export failed: {ex.Message}");
+                _logger.Warn($"Export failed: {ex.Message}");
                 return false;
             }
 
