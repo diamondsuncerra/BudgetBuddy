@@ -1,9 +1,10 @@
 ﻿using BudgetBuddy.Domain;
 using BudgetBuddy.Domain.Extensions;
-namespace BudgetBuddy.Infrastructure
+namespace BudgetBuddy.App
 {
     public class TransactionFactory
     {
+        // de vazut fluid validation
         private const decimal MinAmount = -1_000_000m;
         private const decimal MaxAmount = 1_000_000m;
 
