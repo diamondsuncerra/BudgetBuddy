@@ -37,7 +37,8 @@ public class Program
                 switch (command)
                 {
                     case ConsoleCommands.Import:
-                        await handler.Import(argText);
+                        await handler.Import(argText); // todo import nu mai face in paralel de la 
+                                                        // parsarea argumentelor
                         break;
 
                     case ConsoleCommands.ListAll:

@@ -13,7 +13,6 @@ namespace BudgetBuddy.App
         //private IRepository<Transaction, string> _repository;
         private ILogger _logger;
         private IBudgetService _budgetService;
-
         public ConsoleHelper(IBudgetService budgetService, ILogger logger)
         {
             _budgetService = budgetService;
