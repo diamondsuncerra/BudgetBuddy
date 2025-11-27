@@ -20,20 +20,20 @@ namespace BudgetBuddy.App
         public TransactionListResult ListAll()
         {
             var repositoryList = _repository.GetAll().ToList();
-            if(repositoryList.Count == 0)
+            if (repositoryList.Count == 0)
             {
                 return TransactionListResult.Fail("No transactions found.");
-            } 
+            }
             return TransactionListResult.Ok(repositoryList);
         }
 
         public TransactionListResult ListMonth(string monthKey)
         {
             var monthlyTransactions = _repository.GetAll().Where(t => t.Timestamp.MonthKey().Equals(monthKey)).ToList();
-            if(monthlyTransactions.Count == 0)
+            if (monthlyTransactions.Count == 0)
             {
                 return TransactionListResult.Fail("No transactions found.");
-            } 
+            }
             return TransactionListResult.Ok(monthlyTransactions);
         }
 
@@ -131,7 +131,11 @@ namespace BudgetBuddy.App
 
         TransactionListResult IBudgetService.OverAmount(decimal amount)
         {
-            throw new NotImplementedException();
+            var overAmountTransactions = _repository.GetAll().Where(t => t.Amount <= -amount && t.Amount < 0).ToList();
+            if (overAmountTransactions.Count == 0)
+                return TransactionListResult.Fail("No transactions found.");
+            else 
+                return TransactionListResult.Ok(overAmountTransactions);
         }
 
         TransactionListResult IBudgetService.ByCategory(string category)

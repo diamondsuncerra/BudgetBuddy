@@ -178,9 +178,14 @@ namespace BudgetBuddy.App
                 return;
             }
 
-            var all = _repository.GetAll();
-            var overAmountTransactions = all.Where(t => t.Amount <= -amount && t.Amount < 0);
-            PrintTransactions(overAmountTransactions);
+            var result = _budgetService.OverAmount(amount);
+
+            if (!result.IsSuccess)
+            {
+                _logger.Error(result.Error);
+                return;
+            }
+            PrintTransactions(result.Value!);
         }
 
         public void ByCategory(string[]? argText)
