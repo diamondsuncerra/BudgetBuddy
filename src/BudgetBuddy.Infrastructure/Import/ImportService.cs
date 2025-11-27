@@ -9,9 +9,9 @@ namespace BudgetBuddy.Infrastructure.Import
         // so that app doesnt depend on infr anymore. 
         // also you can add more import methods later
 
-        public ImportService(IRepository<Transaction, string> repository, ILogger logger)
+        public ImportService(IRepository<Transaction, string> repository, ITransactionFactory transactionFactory, ILogger logger)
         {
-            _importer = new CsvImporter(repository, logger);
+            _importer = new CsvImporter(repository, transactionFactory, logger);
         }
         public async Task ReadAllFilesAsync(string[] paths, CancellationToken token)
         {

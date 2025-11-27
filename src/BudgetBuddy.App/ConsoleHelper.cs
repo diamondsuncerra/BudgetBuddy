@@ -1,22 +1,22 @@
 using BudgetBuddy.Domain.Extensions;
 using BudgetBuddy.Domain;
 using BudgetBuddy.Domain.Abstractions;
+using TransactionListResult =
+    BudgetBuddy.Domain.Result<
+        System.Collections.Generic.IReadOnlyList<BudgetBuddy.Domain.Transaction>>;
 
 namespace BudgetBuddy.App
 {
     public class ConsoleHelper
-    {
-        private IRepository<Transaction, string> _repository;
+    {   // trebuie spart
+        // remove sa fie doar remove(id) spre ex
+        //private IRepository<Transaction, string> _repository;
         private ILogger _logger;
-        private IImportService _importer;
-        private IExportService _exportService;
-
-        public ConsoleHelper(IRepository<Transaction, string> repository, ILogger logger, IImportService importer, IExportService exportService)
+        private IBudgetService _budgetService;
+        public ConsoleHelper(IBudgetService budgetService, ILogger logger)
         {
-            _repository = repository;
+            _budgetService = budgetService;
             _logger = logger;
-            _importer = importer;
-            _exportService = exportService;
         }
         public void PrintAllOptions()
         {
@@ -107,8 +107,7 @@ namespace BudgetBuddy.App
 
             try
             {
-
-                await _importer.ReadAllFilesAsync(argText!, cts.Token);
+                await _budgetService.Import(argText, cts.Token);
             }
             catch (OperationCanceledException)
             {
@@ -116,35 +115,44 @@ namespace BudgetBuddy.App
             }
             finally
             {
-                // Ca sa pot relua importul
                 Console.CancelKeyPress -= handler;
             }
         }
 
-
         public void ListAll()
         {
-            var all = _repository.GetAll();
-            PrintTransactions(all);
+            TransactionListResult result = _budgetService.ListAll();
+            if (result.IsSuccess)
+            {
+                PrintTransactions(result.Value);
+            }
+            else
+            {
+                _logger.Error(result.Error);
+            }
         }
         public void ListMonth(string[]? argText)
         {
             if (!IsArgsCorrect(argText, 1, ProperUsage.List))
                 return;
 
-            if (argText![0].TryMonth().IsSuccess)
-            {
-                var all = _repository.GetAll();
-                var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(argText![0]));
-                PrintTransactions(monthlyTransactions);
-            }
-            else
+            var monthResult = argText![0].TryMonth();
+            if (!monthResult.IsSuccess)
             {
                 _logger.Warn(Warnings.InvalidMonth);
+                return;
             }
 
-        }
+            var result = _budgetService.ListMonth(monthResult.Value.MonthKey());
 
+            if (!result.IsSuccess)
+            {
+                _logger.Error(result.Error);
+                return;
+            }
+
+            PrintTransactions(result.Value!); // TODO maybe make value non-nullable
+        }
         public void Over(string[]? argText)
         {
             if (!IsArgsCorrect(argText, 1, ProperUsage.Over))
@@ -162,9 +170,14 @@ namespace BudgetBuddy.App
                 return;
             }
 
-            var all = _repository.GetAll();
-            var overAmountTransactions = all.Where(t => t.Amount <= -amount && t.Amount < 0);
-            PrintTransactions(overAmountTransactions);
+            var result = _budgetService.OverAmount(amount);
+
+            if (!result.IsSuccess)
+            {
+                _logger.Error(result.Error);
+                return;
+            }
+            PrintTransactions(result.Value!);
         }
 
         public void ByCategory(string[]? argText)
@@ -172,209 +185,35 @@ namespace BudgetBuddy.App
             if (!IsArgsCorrect(argText, 1, ProperUsage.ByCategory))
                 return;
 
-            var all = _repository.GetAll();
-            var byCategoryTransactions = all.Where(t => string.Equals(t.Category, argText![0], StringComparison.OrdinalIgnoreCase));
-            PrintTransactions(byCategoryTransactions);
-        }
+            var category = argText![0];
+            var result = _budgetService.ByCategory(category);
 
+            if (!result.IsSuccess)
+            {
+                _logger.Error(result.Error);
+                return;
+            }
+            PrintTransactions(result.Value!);
+        }
         public void Search(string[]? argText)
         {
             if (!IsArgsCorrect(argText, 1, ProperUsage.Search))
                 return;
 
-            var all = _repository.GetAll();
-            var hits = _repository.GetAll().Where(t =>
-            argText!.Any(term =>
-            t.Payee.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-            t.Category.Contains(term, StringComparison.OrdinalIgnoreCase)));
-
-            PrintTransactions(hits);
-        }
-
-        public void SetCategory(string[]? argText)
-        {
-            if (!IsArgsCorrect(argText, 2, ProperUsage.SetCategory))
-                return;
-
-            var id = argText![0];
-            if (!_repository.Contains(id!))
+            var searchTerms = argText; // problema aici cu cati sunt we'll see
+            var result = _budgetService.Search(searchTerms);
+            if (!result.IsSuccess)
             {
-                _logger.Error(Codes.NotFound);
+                _logger.Error(result.Error);
                 return;
             }
-            var newCategoryName = argText![1];
-
-            if (newCategoryName == null)
-            {
-                _logger.Warn(Warnings.NullNewCategory);
-                return;
-            }
-
-            if (!_repository.TryGet(id!, out Transaction? transaction))
-            {
-                _logger.Warn(Warnings.TransactionNotFound);
-                return;
-            }
-            else
-            {
-                if (transaction == null)
-                {
-                    _logger.Warn(Warnings.TransactionNotFound);
-                    return;
-                }
-                else
-                {
-                    transaction.Category = newCategoryName;
-                    _logger.Success(Codes.Success);
-                    _logger.Success("Transaction category changed to: " + newCategoryName);
-                    PrintTransactions(transaction);
-                }
-            }
-
-        }
-
-        public void RenameCategory(string[]? argText)
-        {
-            if (!IsArgsCorrect(argText, 2, ProperUsage.RenameCategory))
-                return;
-
-            var all = _repository.GetAll();
-            var oldCategoryName = argText![0];
-            var transactions = all.Where(t => string.Equals(t.Category, oldCategoryName));
-
-            if (!transactions.Any())
-            {
-                _logger.Warn(Warnings.CategoryNotFound);
-                return;
-            }
-
-            var newCategoryName = argText![1];
-            var transactionCount = transactions.Count();
-            if (newCategoryName == null)
-            {
-                _logger.Warn(Warnings.NullNewCategory);
-                return;
-            }
-
-            foreach (Transaction t in transactions)
-            {
-                t.Category = newCategoryName;
-            }
-
-            _logger.Success($"Category name changed  from {oldCategoryName} to {newCategoryName} for {transactionCount} records.");
-            PrintTransactions(all.Where(t => string.Equals(t.Category, newCategoryName, StringComparison.OrdinalIgnoreCase)));
-
-        }
-
-        public void Remove(string[]? argText)
-        {
-            if (!IsArgsCorrect(argText, 1, ProperUsage.Remove))
-                return;
-
-            var id = argText![0];
-            if (id == null)
-            {
-                _logger.Warn(Warnings.NullId);
-                return;
-            }
-            if (!_repository.Contains(id))
-            {
-                _logger.Error(Codes.NotFound);
-                return;
-            }
-            else
-            {
-                _repository.Remove(id);
-                _logger.Success(Codes.Success);
-            }
-
-        }
-
-        public void StatsYearly(string[]? argText)
-        {
-            if (!IsArgsCorrect(argText, 1, ProperUsage.Stats))
-                return;
-
-            var year = argText![0];
-            if (string.IsNullOrWhiteSpace(year))
-            {
-                _logger.Warn(Warnings.NoYearGiven);
-                return;
-            }
-
-            if (!year.TryYear().IsSuccess)
-            {
-                _logger.Warn(Warnings.InvalidYear);
-                return;
-            }
-
-            if (!IsYearInTheSystem(year))
-            {
-                _logger.Warn(Warnings.YearNotFound);
-                return;
-            }
-
-            for (int i = 1; i <= 12; i++)
-            {
-                var month = year.ToMonthAndYear(i);
-                if (!IsMonthInTheSystem(month))
-                {
-                    _logger.Info("No data for the month: " + month);
-                }
-                else
-                {
-                    GetMonthlyStats(month);
-                }
-            }
-        }
-        public void StatsMonth(string[]? argText)
-        {
-            if (!IsArgsCorrect(argText, 1, ProperUsage.Stats))
-                return;
-            var month = argText![0];
-            if (string.IsNullOrWhiteSpace(month))
-            {
-                _logger.Warn(Warnings.NoMonthGiven);
-                return;
-            }
-
-            if (!month.TryMonth().IsSuccess)
-            {
-                _logger.Warn(Warnings.InvalidDate);
-                return;
-            }
-
-            if (!IsMonthInTheSystem(month))
-            {
-                _logger.Warn(Warnings.MonthNotFound);
-                return;
-            }
-            GetMonthlyStats(month);
-        }
-
-        private void GetMonthlyStats(string month)
-        {
-            (decimal income, decimal expense, decimal net) = GetIncomeExpenseNetForMonth(month);
-            decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month);
-            IEnumerable<(string, decimal)> topCategories = GetTopExpenseCategoriesForMonth(month, 3);
-
-            _logger.Info($"For the month {month}");
-            _logger.Info($"Income: {income}, Expense: {expense}, Net: {net}");
-            _logger.Info($"Average size of a transaction was: {averageTransactionSize}");
-            _logger.Info(topCategories.ToPrettyTable("USD"));
+            PrintTransactions(result.Value!);
         }
         public async Task Export(string[]? argText)
         {
-
             if (!IsArgsCorrect(argText, 2, ProperUsage.Export))
                 return;
 
-
-            if (_repository.Count() == 0)
-            {
-                _logger.Info("No data found to export.");
-                return;
-            }
             string fileName = argText![1];
 
             if (!IsValidExportFormat(argText[0]))
@@ -398,9 +237,8 @@ namespace BudgetBuddy.App
             try
             {
                 bool overwrite = ConfirmOverwrite(fileName);
-                bool result = await _exportService.Export(fileName, format, _repository.GetAll(), cts.Token, overwrite);
-                // nu e ok overwrite ca e flag nu e CLEAN CODE! 
-                if (result)
+                var result = await _budgetService.Export(fileName, format, overwrite, cts.Token);
+                if (result.IsSuccess)
                 {
                     if (!overwrite)
                         return; // not sure
@@ -409,13 +247,134 @@ namespace BudgetBuddy.App
             }
             catch (OperationCanceledException)
             {
-                _logger.Info("Export cancelled by user.");
+                _logger.Info(Info.ExportCancelledByUser);
             }
             finally
             {
                 Console.CancelKeyPress -= handler;
             }
         }
+        public void SetCategory(string[]? argText)
+        {
+            if (!IsArgsCorrect(argText, 2, ProperUsage.SetCategory))
+                return;
+            var id = argText[0];
+            if (id == null)
+            {
+                _logger.Warn(Warnings.NullId);
+                return;
+            }
+            var newCategoryName = argText[1];
+            if (newCategoryName == null)
+            {
+                _logger.Warn(Warnings.NullNewCategory);
+                return;
+            }
+            var result = _budgetService.SetCategory(id, newCategoryName);
+            if (!result.IsSuccess)
+            {
+                _logger.Error(result.Error);
+                return;
+            }
+            PrintTransactions(result.Value!);
+
+        }
+        public void RenameCategory(string[]? argText)
+        {
+            if (!IsArgsCorrect(argText, 2, ProperUsage.RenameCategory))
+                return;
+
+            var oldCategoryName = argText![0];
+            var newCategoryName = argText![1];
+
+            if (newCategoryName == null)
+            {
+                _logger.Warn(Warnings.NullNewCategory);
+                return;
+            }
+            TransactionListResult result = _budgetService.RenameCategory(oldCategoryName, newCategoryName);
+            if (result.IsSuccess)
+            {
+                _logger.Success($"Category name changed  from {oldCategoryName} to {newCategoryName} for {result.Value!.Count} records.");
+                PrintTransactions(result.Value);
+            }
+            else
+            {
+                _logger.Error(result.Error);
+            }
+        }
+
+        public void Remove(string[]? argText)
+        {
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Remove))
+                return;
+
+            var id = argText![0];
+            if (id == null)
+            {
+                _logger.Warn(Warnings.NullId);
+                return;
+            }
+            var result = _budgetService.Remove(id);
+            if (result.IsSuccess)
+                _logger.Success(Codes.Success);
+            else
+                _logger.Error(Codes.NotFound);
+        }
+
+        public void StatsYearly(string[]? argText)
+        {
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Stats))
+                return;
+
+            var year = argText![0];
+            if (string.IsNullOrWhiteSpace(year))
+            {
+                _logger.Warn(Warnings.NoYearGiven);
+                return;
+            }
+            if (!year.TryYear().IsSuccess)
+            {
+                _logger.Warn(Warnings.InvalidYear);
+                return;
+            }
+            var result = _budgetService.GetYearlyFinancialSummary(year, 3);
+            if (result.IsSuccess)
+            {
+                Console.WriteLine(result.Value);
+            }
+            else
+            {
+                _logger.Error(result.Error);
+            }
+        }
+        public void StatsMonth(string[]? argText)
+        {
+            if (!IsArgsCorrect(argText, 1, ProperUsage.Stats))
+                return;
+            var month = argText![0];
+            if (string.IsNullOrWhiteSpace(month))
+            {
+                _logger.Warn(Warnings.NoMonthGiven);
+                return;
+            }
+
+            if (!month.TryMonth().IsSuccess)
+            {
+                _logger.Warn(Warnings.InvalidDate);
+                return;
+            }
+            var result = _budgetService.GetMonthlyFinancialSummary(month, 3);
+            if (result.IsSuccess)
+            {
+                Console.WriteLine(result.Value);
+            }
+            else
+            {
+                _logger.Error(result.Error);
+            }
+        }
+
         public void PrintTransactions(IEnumerable<Transaction> transactions)
         {
             if (!transactions.Any())
@@ -429,16 +388,14 @@ namespace BudgetBuddy.App
                 Console.WriteLine(t);
             }
         }
-        private void PrintTransactions(Transaction transaction)
+        public void PrintTransactions(Transaction transaction)
         {
             if (transaction == null)
             {
                 _logger.Info(Info.NoTransactionsFound);
                 return;
             }
-
             Console.WriteLine(transaction);
-
         }
 
         public bool ConfirmOverwrite(string fileName)
@@ -447,7 +404,7 @@ namespace BudgetBuddy.App
                 return true;
 
             Console.WriteLine($"File {fileName} already exists.");
-            Console.Write("Do you want to overwrite it? [y/N]: ");
+            Console.Write(Info.OverWriteQuestionPrompt);
             var response = Console.ReadLine();
 
             if (string.IsNullOrWhiteSpace(response))
@@ -457,53 +414,17 @@ namespace BudgetBuddy.App
             return response == "y" || response == "yes";
         }
 
-
-        public (decimal, decimal, decimal) GetIncomeExpenseNetForMonth(string month)
-        {
-            decimal income = 0m, expense = 0m;
-            var all = _repository.GetAll();
-            var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
-
-            var incomeTransactions = monthlyTransactions.Where(t => t.Amount > 0m).Select(t => t.Amount);
-            var expenseTransactions = monthlyTransactions.Where(t => t.Amount <= 0m).Select(t => t.Amount);
-
-            income = incomeTransactions.Sum();
-            expense = expenseTransactions.SumAbs();
-
-            decimal net = income - expense;
-            return (income, expense, net);
-        }
-
-        public decimal GetAverageTransactionSizeForMonth(string month)
-        {
-            var all = _repository.GetAll();
-            var monthly = all.Where(t => t.Timestamp.MonthKey().Equals(month)).Select(t => t.Amount);
-            return monthly.Any() ? monthly.AverageAbs() : 0m;
-        }
-
-        public IEnumerable<(string Category, decimal Total)> GetTopExpenseCategoriesForMonth(string month, int top)
-        {
-            var all = _repository.GetAll();
-            var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
-            return monthlyTransactions.Where(t => t.Amount < 0m)
-            .GroupBy(t => t.Category)
-            .Select(g => (Category: g.Key, Total: g.Select(t => t.Amount).Sum()))
-            .OrderByDescending(x => -x.Total)
-            .Take(top);
-
-        }
-
         private bool IsArgsCorrect(string[]? args, int correctLength, string usage)
         {
             if (args is null || args.Length != correctLength)
             {
-                _logger.Warn($"Improper usage. Try: {usage}.");
+                _logger.Warn(usage.ProperUsageFormat());
                 return false;
             }
 
             if (args.Take(correctLength).Any(a => string.IsNullOrWhiteSpace(a)))
             {
-                _logger.Warn($"Improper usage. Try: {usage}.");
+                _logger.Warn(usage.ProperUsageFormat());
                 return false;
             }
 
@@ -514,16 +435,6 @@ namespace BudgetBuddy.App
         {
             return Enum.TryParse(typeof(ExportFormat), format, true, out _); // _ -> pt ca nu folosesc!! <3 <3
         }
-        private bool IsYearInTheSystem(string year)
-        {
-            var transactions = _repository.GetAll();
-            return transactions.Where(t => t.Timestamp.YearKey().Equals(year)).Any();
-        }
 
-        private bool IsMonthInTheSystem(string month)
-        {
-            var transactions = _repository.GetAll();
-            return transactions.Where(t => t.Timestamp.MonthKey().Equals(month)).Any();
-        }
     }
 }
