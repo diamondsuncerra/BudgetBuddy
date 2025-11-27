@@ -13,8 +13,6 @@ namespace BudgetBuddy.App
         //private IRepository<Transaction, string> _repository;
         private ILogger _logger;
         private IBudgetService _budgetService;
-        // private IImportService _importer;
-        // private IExportService _exportService;
 
         public ConsoleHelper(IBudgetService budgetService, ILogger logger)
         {
@@ -193,9 +191,15 @@ namespace BudgetBuddy.App
             if (!IsArgsCorrect(argText, 1, ProperUsage.ByCategory))
                 return;
 
-            var all = _repository.GetAll();
-            var byCategoryTransactions = all.Where(t => string.Equals(t.Category, argText![0], StringComparison.OrdinalIgnoreCase));
-            PrintTransactions(byCategoryTransactions);
+            var category = argText![0];
+            var result = _budgetService.ByCategory(category);
+
+            if (!result.IsSuccess)
+            {
+                _logger.Error(result.Error);
+                return;
+            }
+            PrintTransactions(result.Value!);
         }
 
         public void Search(string[]? argText)
@@ -203,13 +207,14 @@ namespace BudgetBuddy.App
             if (!IsArgsCorrect(argText, 1, ProperUsage.Search))
                 return;
 
-            var all = _repository.GetAll();
-            var hits = _repository.GetAll().Where(t =>
-            argText!.Any(term =>
-            t.Payee.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-            t.Category.Contains(term, StringComparison.OrdinalIgnoreCase)));
-
-            PrintTransactions(hits);
+            var searchTerms = argText; // problema aici cu cati sunt we'll see
+            var result = _budgetService.Search(searchTerms);
+            if (!result.IsSuccess)
+            {
+                _logger.Error(result.Error);
+                return;
+            }
+            PrintTransactions(result.Value!);
         }
 
         public async Task Export(string[]? argText)
@@ -318,7 +323,7 @@ namespace BudgetBuddy.App
                 _logger.Warn(Warnings.NullNewCategory);
                 return;
             }
-            Result<IReadOnlyList<Transaction>> result = _budgetService.RenameCategory(oldCategoryName, newCategoryName);
+            TransactionListResult result = _budgetService.RenameCategory(oldCategoryName, newCategoryName);
             if (result.IsSuccess)
             {
                 _logger.Success($"Category name changed  from {oldCategoryName} to {newCategoryName} for {result.Value!.Count} records.");

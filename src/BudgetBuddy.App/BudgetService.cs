@@ -4,58 +4,33 @@ using BudgetBuddy.Domain;
 using TransactionListResult =
     BudgetBuddy.Domain.Result<
         System.Collections.Generic.IReadOnlyList<BudgetBuddy.Domain.Transaction>>;
+using Microsoft.VisualBasic;
 namespace BudgetBuddy.App
 {
     public class BudgetService : IBudgetService
     {
         private IRepository<Transaction, string> _repository;
-        //private IImportService _importer;
+        private IImportService _importService;
         private IExportService _exportService;
 
-        public BudgetService(IRepository<Transaction, string> repository, IExportService exportService)
+        public BudgetService(IRepository<Transaction, string> repository, IImportService importService, IExportService exportService)
         {
             _repository = repository;
+            _importService = importService;
             _exportService = exportService;
         }
         public TransactionListResult ListAll()
         {
-            var repositoryList = _repository.GetAll().ToList();
-            if (repositoryList.Count == 0)
-            {
-                return TransactionListResult.Fail("No transactions found.");
-            }
-            return TransactionListResult.Ok(repositoryList);
+            var allTransactions = _repository.GetAll().ToList();
+            return GetResultOrError(allTransactions);
         }
 
         public TransactionListResult ListMonth(string monthKey)
         {
             var monthlyTransactions = _repository.GetAll().Where(t => t.Timestamp.MonthKey().Equals(monthKey)).ToList();
-            if (monthlyTransactions.Count == 0)
-            {
-                return TransactionListResult.Fail("No transactions found.");
-            }
-            return TransactionListResult.Ok(monthlyTransactions);
+            return GetResultOrError(monthlyTransactions);
         }
 
-        public IEnumerable<Transaction> OverAmount(decimal amount)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Transaction> ByCategory(string category)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Transaction> Search(string[] terms)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool SetCategory(string id, string newCategory, out Transaction? updated)
-        {
-            throw new NotImplementedException();
-        }
 
         public TransactionListResult RenameCategory(string oldCategoryName, string newCategoryName)
         {
@@ -75,9 +50,12 @@ namespace BudgetBuddy.App
             return TransactionListResult.Ok(transactions);
         }
 
-        public bool Remove(string id)
+        public Result<bool> Remove(string id)
         {
-            return _repository.Remove(id);
+            if (_repository.Remove(id))
+                return Result<bool>.Ok(true);
+            else
+                return Result<bool>.Fail("Id not found.");
         }
 
         public bool YearExists(string year)
@@ -129,16 +107,38 @@ namespace BudgetBuddy.App
             .Take(top);
         }
 
-        TransactionListResult IBudgetService.OverAmount(decimal amount)
+        public TransactionListResult OverAmount(decimal amount)
         {
             var overAmountTransactions = _repository.GetAll().Where(t => t.Amount <= -amount && t.Amount < 0).ToList();
-            if (overAmountTransactions.Count == 0)
-                return TransactionListResult.Fail("No transactions found.");
-            else 
-                return TransactionListResult.Ok(overAmountTransactions);
+            return GetResultOrError(overAmountTransactions);
         }
 
-        TransactionListResult IBudgetService.ByCategory(string category)
+        public TransactionListResult ByCategory(string category)
+        {
+            var transactionsByCategory = _repository.GetAll()
+            .Where(t => string.Equals(t.Category, category, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+            return GetResultOrError(transactionsByCategory);
+        }
+
+        private TransactionListResult GetResultOrError(IReadOnlyList<Transaction> transactions)
+        {
+            if (transactions.Count == 0)
+                return TransactionListResult.Fail("No transactions found.");
+            else
+                return TransactionListResult.Ok(transactions);
+        }
+
+        public TransactionListResult Search(string[] terms)
+        {
+            var searchTransactions = _repository.GetAll().Where(t =>
+            terms.Any(term =>
+            t.Payee.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+            t.Category.Contains(term, StringComparison.OrdinalIgnoreCase))).ToList();
+            return GetResultOrError(searchTransactions);
+        }
+
+        public Result<bool> SetCategory(string id, string newCategory, out Transaction? updated)
         {
             throw new NotImplementedException();
         }

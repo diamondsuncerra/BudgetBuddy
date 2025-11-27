@@ -20,9 +20,9 @@ public class Program
         
         IRepository<Transaction, string> repository = new TransactionsRepository();
         ILogger logger = new ConsoleLogger();
-        IImportService importer = new ImportService(repository, logger);
+        IImportService importerService = new ImportService(repository, logger);
         IExportService exportService = new ExportService(logger);
-        IBudgetService budgetService = new BudgetService(repository, exportService);
+        IBudgetService budgetService = new BudgetService(repository, importerService, exportService);
         ConsoleHelper handler = new ConsoleHelper(budgetService, logger);
 
         Console.WriteLine(Info.Welcome);

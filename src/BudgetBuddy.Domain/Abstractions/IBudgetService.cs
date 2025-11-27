@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using TransactionListResult =
     BudgetBuddy.Domain.Result<
         System.Collections.Generic.IReadOnlyList<BudgetBuddy.Domain.Transaction>>;
@@ -10,11 +11,11 @@ namespace BudgetBuddy.Domain.Abstractions
         TransactionListResult ListAll();
         TransactionListResult OverAmount(decimal amount);
         TransactionListResult ByCategory(string category);
-        IEnumerable<Transaction> Search(string[] terms);
+        TransactionListResult Search(string[] terms);
 
-        bool SetCategory(string id, string newCategory, out Transaction? updated);
-        public Result<IReadOnlyList<Transaction>> RenameCategory(string oldCategoryName, string newCategoryName);
-        bool Remove(string id);
+        Result<bool> SetCategory(string id, string newCategory, out Transaction? updated);
+        TransactionListResult RenameCategory(string oldCategoryName, string newCategoryName);
+        Result<bool> Remove(string id);
 
         bool YearExists(string year);
         bool MonthExists(string month);
