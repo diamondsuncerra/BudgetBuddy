@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using BudgetBuddy.Domain;
-
+using BudgetBuddy.App;
+using BudgetBuddy.Domain.Abstractions;
 
 namespace BudgetBuddy.Infrastructure.Import
 {
@@ -14,10 +9,14 @@ namespace BudgetBuddy.Infrastructure.Import
         private readonly IRepository<Transaction, string> _repo;
         private readonly ILogger _logger;
         private readonly object lockObj = new();
-
-        public CsvImporter(IRepository<Transaction, string> repository, ILogger logger)
+        private readonly ITransactionFactory _transactionFactory;
+        public CsvImporter
+        (IRepository<Transaction, string> repository,
+         ITransactionFactory transactionFactory,
+         ILogger logger)
         {
             _repo = repository;
+            _transactionFactory = transactionFactory;
             _logger = logger;
         }
 
@@ -72,7 +71,7 @@ namespace BudgetBuddy.Infrastructure.Import
                     if (string.IsNullOrWhiteSpace(line))
                         continue;
 
-                    Result<Transaction> result = TransactionFactory.TryCreate(line);
+                    Result<Transaction> result = _transactionFactory.TryCreate(line);
                     if (!result.IsSuccess)
                     {
                         malformed++;

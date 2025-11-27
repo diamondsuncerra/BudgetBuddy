@@ -1,14 +1,15 @@
 ﻿using BudgetBuddy.Domain;
+using BudgetBuddy.Domain.Abstractions;
 using BudgetBuddy.Domain.Extensions;
 namespace BudgetBuddy.App
 {
-    public class TransactionFactory
+    public class TransactionFactory : ITransactionFactory
     {
         // de vazut fluid validation
         private const decimal MinAmount = -1_000_000m;
         private const decimal MaxAmount = 1_000_000m;
 
-        public static Result<Transaction> TryCreate(string line)
+        public Result<Transaction> TryCreate(string line)
         {
 
             if (string.IsNullOrWhiteSpace(line))

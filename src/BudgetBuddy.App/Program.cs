@@ -20,7 +20,8 @@ public class Program
         
         IRepository<Transaction, string> repository = new TransactionsRepository();
         ILogger logger = new ConsoleLogger();
-        IImportService importerService = new ImportService(repository, logger);
+        ITransactionFactory transactionFactory = new TransactionFactory();
+        IImportService importerService = new ImportService(repository, transactionFactory, logger);
         IExportService exportService = new ExportService(logger);
         IBudgetService budgetService = new BudgetService(repository, importerService, exportService);
         ConsoleHelper handler = new ConsoleHelper(budgetService, logger);

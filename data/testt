@@ -45,7 +45,7 @@
     "payee": "Amazon",
     "amount": -89.40,
     "currency": "USD",
-    "category": "Test3"
+    "category": "Shopping"
   },
   {
     "id": "7",
@@ -149,62 +149,14 @@
     "payee": "Apple Store",
     "amount": -130.50,
     "currency": "USD",
-    "category": "Test3"
+    "category": "Shopping"
   },
   {
     "id": "20",
-    "timestamp": "2025-03-31",
+    "timestamp": "2025-01-31",
     "payee": "Interest Income",
-    "amount": 26.20,
+    "amount": 25.30,
     "currency": "USD",
     "category": "Income"
-  },
-  {
-    "id": "43",
-    "timestamp": "2025-03-01",
-    "payee": "Salary",
-    "amount": 3500,
-    "currency": "USD",
-    "category": "Income"
-  },
-  {
-    "id": "44",
-    "timestamp": "2025-03-02",
-    "payee": "Starbucks",
-    "amount": -6.95,
-    "currency": "USD",
-    "category": "Food"
-  },
-  {
-    "id": "45",
-    "timestamp": "2025-03-03",
-    "payee": "Walmart",
-    "amount": -132.80,
-    "currency": "USD",
-    "category": "Groceries"
-  },
-  {
-    "id": "46",
-    "timestamp": "2025-03-04",
-    "payee": "Shell Gas",
-    "amount": -48.20,
-    "currency": "USD",
-    "category": "Transport"
-  },
-  {
-    "id": "47",
-    "timestamp": "2025-03-05",
-    "payee": "Amazon",
-    "amount": -76.45,
-    "currency": "USD",
-    "category": "Test3"
-  },
-  {
-    "id": "648",
-    "timestamp": "2025-03-06",
-    "payee": "Netflix",
-    "amount": -15.99,
-    "currency": "USD",
-    "category": "Entertainment"
   }
 ]

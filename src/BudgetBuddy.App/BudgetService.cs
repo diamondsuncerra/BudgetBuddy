@@ -38,7 +38,7 @@ namespace BudgetBuddy.App
             // IReadOnlyList because we moved to list
             var all = _repository.GetAll();
             var transactions = all
-                .Where(t => string.Equals(t.Category, oldCategoryName, StringComparison.OrdinalIgnoreCase))
+                .Where(t => string.Equals(t.Category, oldCategoryName))
                 .ToList();
 
             if (transactions.Count == 0)
@@ -70,9 +70,14 @@ namespace BudgetBuddy.App
             return transactions.Where(t => t.Timestamp.MonthKey().Equals(month)).Any();
         }
 
-        public async Task Export(string fileName, string format, bool overwrite, CancellationToken token)
+        public async Task<Result<bool>> Export(string fileName, string format, bool overwrite, CancellationToken token)
         {
-            await _exportService.Export(fileName, format, _repository.GetAll(), token, overwrite);
+            if (_repository.Count() == 0)
+            {
+                return Result<bool>.Fail("No data found to export.");
+            }
+            // TODO I dont think this is ok
+            return Result<bool>.Ok(await _exportService.Export(fileName, format, _repository.GetAll(), token, overwrite));
         }
         public TransactionListResult OverAmount(decimal amount)
         {

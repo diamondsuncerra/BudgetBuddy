@@ -16,11 +16,8 @@ namespace BudgetBuddy.App
 
         public ConsoleHelper(IBudgetService budgetService, ILogger logger)
         {
-            // _repository = repository;
             _budgetService = budgetService;
             _logger = logger;
-            // _importer = importer;
-            // _exportService = exportService;
         }
         public void PrintAllOptions()
         {
@@ -218,11 +215,6 @@ namespace BudgetBuddy.App
             if (!IsArgsCorrect(argText, 2, ProperUsage.Export))
                 return;
 
-            if (_repository.Count() == 0)
-            {
-                _logger.Info("No data found to export.");
-                return;
-            }
             string fileName = argText![1];
 
             if (!IsValidExportFormat(argText[0]))
@@ -246,9 +238,8 @@ namespace BudgetBuddy.App
             try
             {
                 bool overwrite = ConfirmOverwrite(fileName);
-                bool result = await _exportService.Export(fileName, format, _repository.GetAll(), cts.Token, overwrite);
-                // nu e ok overwrite ca e flag nu e CLEAN CODE! 
-                if (result)
+                var result = await _budgetService.Export(fileName, format, overwrite, cts.Token);
+                if (result.IsSuccess)
                 {
                     if (!overwrite)
                         return; // not sure
@@ -325,8 +316,8 @@ namespace BudgetBuddy.App
                 _logger.Warn(Warnings.NullId);
                 return;
             }
-            bool success = _budgetService.Remove(id);
-            if (success)
+            var result = _budgetService.Remove(id);
+            if (result.IsSuccess)
                 _logger.Success(Codes.Success);
             else
                 _logger.Error(Codes.NotFound);
