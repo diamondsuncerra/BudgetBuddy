@@ -111,8 +111,7 @@ namespace BudgetBuddy.App
 
             try
             {
-
-                await _importer.ReadAllFilesAsync(argText!, cts.Token);
+                await _budgetService.Import(argText, cts.Token);
             }
             catch (OperationCanceledException)
             {
@@ -120,7 +119,6 @@ namespace BudgetBuddy.App
             }
             finally
             {
-                // Ca sa pot relua importul
                 Console.CancelKeyPress -= handler;
             }
         }
@@ -201,7 +199,6 @@ namespace BudgetBuddy.App
             }
             PrintTransactions(result.Value!);
         }
-
         public void Search(string[]? argText)
         {
             if (!IsArgsCorrect(argText, 1, ProperUsage.Search))
@@ -216,7 +213,6 @@ namespace BudgetBuddy.App
             }
             PrintTransactions(result.Value!);
         }
-
         public async Task Export(string[]? argText)
         {
             if (!IsArgsCorrect(argText, 2, ProperUsage.Export))
@@ -272,44 +268,27 @@ namespace BudgetBuddy.App
         {
             if (!IsArgsCorrect(argText, 2, ProperUsage.SetCategory))
                 return;
-
-            var id = argText![0];
-            if (!_repository.Contains(id!))
+            var id = argText[0];
+            if (id == null)
             {
-                _logger.Error(Codes.NotFound);
+                _logger.Warn(Warnings.NullId);
                 return;
             }
-            var newCategoryName = argText![1];
-
+            var newCategoryName = argText[1];
             if (newCategoryName == null)
             {
                 _logger.Warn(Warnings.NullNewCategory);
                 return;
             }
-
-            if (!_repository.TryGet(id!, out Transaction? transaction))
+            var result = _budgetService.SetCategory(id, newCategoryName);
+            if (!result.IsSuccess)
             {
-                _logger.Warn(Warnings.TransactionNotFound);
+                _logger.Error(result.Error);
                 return;
             }
-            else
-            {
-                if (transaction == null)
-                {
-                    _logger.Warn(Warnings.TransactionNotFound);
-                    return;
-                }
-                else
-                {
-                    transaction.Category = newCategoryName;
-                    _logger.Success(Codes.Success);
-                    _logger.Success("Transaction category changed to: " + newCategoryName);
-                    PrintTransactions(transaction);
-                }
-            }
+            PrintTransactions(result.Value!);
 
         }
-
         public void RenameCategory(string[]? argText)
         {
             if (!IsArgsCorrect(argText, 2, ProperUsage.RenameCategory))
@@ -364,30 +343,19 @@ namespace BudgetBuddy.App
                 _logger.Warn(Warnings.NoYearGiven);
                 return;
             }
-
             if (!year.TryYear().IsSuccess)
             {
                 _logger.Warn(Warnings.InvalidYear);
                 return;
             }
-
-            if (!IsYearInTheSystem(year))
+            var result = _budgetService.GetYearlyFinancialSummary(year, 3);
+            if (result.IsSuccess)
             {
-                _logger.Warn(Warnings.YearNotFound);
-                return;
+                Console.WriteLine(result.Value);
             }
-
-            for (int i = 1; i <= 12; i++)
+            else
             {
-                var month = year.ToMonthAndYear(i);
-                if (!IsMonthInTheSystem(month))
-                {
-                    _logger.Info("No data for the month: " + month);
-                }
-                else
-                {
-                    GetMonthlyStats(month);
-                }
+                _logger.Error(result.Error);
             }
         }
         public void StatsMonth(string[]? argText)
@@ -406,25 +374,15 @@ namespace BudgetBuddy.App
                 _logger.Warn(Warnings.InvalidDate);
                 return;
             }
-
-            if (!IsMonthInTheSystem(month))
+            var result = _budgetService.GetMonthlyFinancialSummary(month, 3);
+            if (result.IsSuccess)
             {
-                _logger.Warn(Warnings.MonthNotFound);
-                return;
+                Console.WriteLine(result.Value);
             }
-            GetMonthlyStats(month);
-        }
-
-        private void GetMonthlyStats(string month)
-        {
-            (decimal income, decimal expense, decimal net) = GetIncomeExpenseNetForMonth(month);
-            decimal averageTransactionSize = GetAverageTransactionSizeForMonth(month);
-            IEnumerable<(string, decimal)> topCategories = GetTopExpenseCategoriesForMonth(month, 3);
-
-            _logger.Info($"For the month {month}");
-            _logger.Info($"Income: {income}, Expense: {expense}, Net: {net}");
-            _logger.Info($"Average size of a transaction was: {averageTransactionSize}");
-            _logger.Info(topCategories.ToPrettyTable("USD"));
+            else
+            {
+                _logger.Error(result.Error);
+            }
         }
 
         public void PrintTransactions(IEnumerable<Transaction> transactions)

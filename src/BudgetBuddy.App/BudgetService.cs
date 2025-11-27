@@ -70,43 +70,10 @@ namespace BudgetBuddy.App
             return transactions.Where(t => t.Timestamp.MonthKey().Equals(month)).Any();
         }
 
-        public (decimal, decimal, decimal) GetIncomeExpenseNetForMonth(string month)
-        {   // TODO: No more tuples
-            decimal income = 0m, expense = 0m;
-            var all = _repository.GetAll();
-            var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
-
-            var incomeTransactions = monthlyTransactions.Where(t => t.Amount > 0m).Select(t => t.Amount);
-            var expenseTransactions = monthlyTransactions.Where(t => t.Amount <= 0m).Select(t => t.Amount);
-
-            income = incomeTransactions.Sum();
-            expense = expenseTransactions.SumAbs();
-
-            decimal net = income - expense;
-            return (income, expense, net);
-        }
-        public decimal GetAverageTransactionSizeForMonth(string month)
-        {
-            var all = _repository.GetAll();
-            var monthly = all.Where(t => t.Timestamp.MonthKey().Equals(month)).Select(t => t.Amount);
-            return monthly.Any() ? monthly.AverageAbs() : 0m;
-        }
-
-        public async Task Export(string fileName, string format, CancellationToken token, bool overwrite)
+        public async Task Export(string fileName, string format, bool overwrite, CancellationToken token)
         {
             await _exportService.Export(fileName, format, _repository.GetAll(), token, overwrite);
         }
-        public IEnumerable<(string Category, decimal Total)> GetTopExpenseCategoriesForMonth(string month, int top)
-        {
-            var all = _repository.GetAll();
-            var monthlyTransactions = all.Where(t => t.Timestamp.MonthKey().Equals(month));
-            return monthlyTransactions.Where(t => t.Amount < 0m)
-            .GroupBy(t => t.Category)
-            .Select(g => (Category: g.Key, Total: g.Select(t => t.Amount).Sum()))
-            .OrderByDescending(x => -x.Total)
-            .Take(top);
-        }
-
         public TransactionListResult OverAmount(decimal amount)
         {
             var overAmountTransactions = _repository.GetAll().Where(t => t.Amount <= -amount && t.Amount < 0).ToList();
@@ -138,9 +105,91 @@ namespace BudgetBuddy.App
             return GetResultOrError(searchTransactions);
         }
 
-        public Result<bool> SetCategory(string id, string newCategory, out Transaction? updated)
+        public Result<Transaction> SetCategory(string id, string newCategoryName)
         {
-            throw new NotImplementedException();
+            if (_repository.TryGet(id, out Transaction? transaction))
+            {
+                if (transaction == null) // poate id-ul exista dar nu si tranzactie la el
+                    return Result<Transaction>.Fail("No transaction found");
+                transaction.Category = newCategoryName;
+                return Result<Transaction>.Ok(transaction);
+            }
+            else
+                return Result<Transaction>.Fail("No transaction found");
         }
+
+        public async Task Import(string[] fileName, CancellationToken token)
+        {
+            await _importService.ReadAllFilesAsync(fileName, token);
+        }
+
+        public Result<MonthlyFinancialSummary> GetMonthlyFinancialSummary(string month, int top)
+        {
+            var monthlyTransactions = _repository.GetAll()
+                .Where(t => t.Timestamp.MonthKey().Equals(month))
+                .ToList();
+
+            if (monthlyTransactions.Count == 0)
+                return Result<MonthlyFinancialSummary>.Fail("No transactions found for this month.");
+
+            var incomeTransactions = monthlyTransactions
+                .Where(t => t.Amount > 0m)
+                .Select(t => t.Amount)
+                .ToList();
+
+            var expenseTransactions = monthlyTransactions
+                .Where(t => t.Amount <= 0m)
+                .Select(t => t.Amount)
+                .ToList();
+
+            var income = incomeTransactions.Sum();
+            var expense = expenseTransactions.SumAbs();
+            var average = monthlyTransactions.Select(t => t.Amount).AverageAbs(); // fixed: only this month
+
+            var topCategories = monthlyTransactions
+                .Where(t => t.Amount < 0m)
+                .GroupBy(t => t.Category)
+                .Select(g => new TopCategory(
+                    g.Key,
+                    g.Select(t => t.Amount).Sum()
+                ))
+                .OrderByDescending(x => -x.Total)
+                .Take(top)
+                .ToList()
+                .AsReadOnly();
+
+            var summary = new MonthlyFinancialSummary(
+                monthKey: month,
+                income: income,
+                expense: expense,
+                averageTransactionSize: average,
+                topExpenseCategories: topCategories
+            );
+
+            return Result<MonthlyFinancialSummary>.Ok(summary);
+        }
+
+        public Result<YearlyFinancialSummary> GetYearlyFinancialSummary(string year, int topCategories)
+        {
+            var yearlyFinancialSummary = new List<MonthlyFinancialSummary>();
+
+            for (int month = 1; month <= 12; month++)
+            {
+                string monthKey = year.ToMonthAndYear(month);
+                var monthlyFinancialResult = GetMonthlyFinancialSummary(monthKey, topCategories);
+
+                if (monthlyFinancialResult.IsSuccess)
+                {
+                    yearlyFinancialSummary.Add(monthlyFinancialResult.Value!);
+                }
+
+            }
+            if (yearlyFinancialSummary.Count == 0)
+                return Result<YearlyFinancialSummary>.Fail("No data found for the entire year.");
+
+            var yearly = new YearlyFinancialSummary(year, yearlyFinancialSummary.AsReadOnly());
+            return Result<YearlyFinancialSummary>.Ok(yearly);
+        }
+
     }
 }

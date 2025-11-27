@@ -23,7 +23,7 @@ namespace BudgetBuddy.Infrastructure
         }
         public bool TryGet(string id, out Transaction? entity)
         {
-            return _data.TryGetValue(id, out entity);
+            return _data.TryGetValue(id, out entity); // TODO?
         }
         public IEnumerable<Transaction> GetAll()
         {

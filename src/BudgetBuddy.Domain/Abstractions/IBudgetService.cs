@@ -13,15 +13,13 @@ namespace BudgetBuddy.Domain.Abstractions
         TransactionListResult ByCategory(string category);
         TransactionListResult Search(string[] terms);
 
-        Result<bool> SetCategory(string id, string newCategory, out Transaction? updated);
+        Result<Transaction> SetCategory(string id, string newCategory);
         TransactionListResult RenameCategory(string oldCategoryName, string newCategoryName);
         Result<bool> Remove(string id);
+        Task Export(string fileName, string format, bool overwrite, CancellationToken token);
+        Task Import(string[] fileName, CancellationToken token);
+        public Result<MonthlyFinancialSummary> GetMonthlyFinancialSummary(string month, int top);
+        public Result<YearlyFinancialSummary> GetYearlyFinancialSummary(string month, int top);
 
-        bool YearExists(string year);
-        bool MonthExists(string month);
-
-        (decimal income, decimal expense, decimal net) GetIncomeExpenseNetForMonth(string month);
-        decimal GetAverageTransactionSizeForMonth(string month);
-        IEnumerable<(string Category, decimal Total)> GetTopExpenseCategoriesForMonth(string month, int top);
     }
 }
